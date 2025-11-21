@@ -141,6 +141,17 @@ const App: React.FC = () => {
     setIsSearching(false);
   };
 
+  const handleContactClick = (vendor: Vendor) => {
+    if (!user) {
+        setAuthInitialMode('USER');
+        setAuthOpen(true);
+        return;
+    }
+    if (window.confirm(`Do you want to call ${vendor.name}?\n\nNumber: ${vendor.contact}`)) {
+        window.location.href = `tel:${vendor.contact}`;
+    }
+  };
+
   // --- Admin Functions ---
   const addCategory = (name: string) => {
     const newCat: Category = { id: name.toLowerCase().replace(/\s/g, '_'), name: name, subCategories: [] };
@@ -299,7 +310,10 @@ const App: React.FC = () => {
                     </div>
                     <div className="flex flex-col justify-between items-end min-w-[140px]">
                        <div className="text-xl font-bold">₹{v.priceStart}<span className="text-xs font-normal text-gray-500"> onwards</span></div>
-                       <button className="bg-primary text-white px-6 py-2.5 rounded-sm font-bold shadow hover:bg-blue-600 w-full flex items-center justify-center gap-2">
+                       <button 
+                          onClick={() => handleContactClick(v)}
+                          className="bg-primary text-white px-6 py-2.5 rounded-sm font-bold shadow hover:bg-blue-600 w-full flex items-center justify-center gap-2 transition-colors"
+                       >
                           <PhoneCall className="w-4 h-4" /> Contact
                        </button>
                     </div>
