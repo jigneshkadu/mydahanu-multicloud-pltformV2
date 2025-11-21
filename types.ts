@@ -1,3 +1,4 @@
+
 export enum UserRole {
   USER = 'USER',
   VENDOR = 'VENDOR',
@@ -13,6 +14,11 @@ export interface Category {
   description?: string;
 }
 
+export interface Product {
+  name: string;
+  price: number;
+}
+
 export interface Vendor {
   id: string;
   name: string;
@@ -25,6 +31,8 @@ export interface Vendor {
   isVerified: boolean;
   imageUrl: string;
   priceStart: number;
+  email?: string;
+  products?: Product[];
 }
 
 export interface Banner {

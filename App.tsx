@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   User, UserRole, Vendor, Category, Banner, Order 
@@ -171,8 +172,11 @@ const App: React.FC = () => {
 
   const addVendor = (v: Partial<Vendor>) => {
     setVendors([...vendors, v as Vendor]);
-    // After registration, go to dashboard
-    setView('VENDOR_DASHBOARD');
+    // Only redirect to dashboard if not adding from Admin Panel (which lacks auth context here mostly)
+    // But since we use this for both, we can check View state or just not redirect if Admin.
+    if (view !== 'ADMIN') {
+        setView('VENDOR_DASHBOARD');
+    }
   };
   
   const removeVendor = (id: string) => {
@@ -341,6 +345,7 @@ const App: React.FC = () => {
             onAddSubCategory={addSubCategory}
             onRemoveSubCategory={removeSubCategory}
             onRemoveVendor={removeVendor}
+            onAddVendor={addVendor}
             onAddBanner={() => {}}
             onRemoveBanner={(id) => setBanners(banners.filter(b => b.id !== id))}
           />

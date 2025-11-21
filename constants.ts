@@ -1,3 +1,4 @@
+
 import { Category, Vendor, Banner, Order } from './types';
 
 export const APP_CATEGORIES: Category[] = [
@@ -237,7 +238,12 @@ export const MOCK_VENDORS: Vendor[] = [
     maskedContact: '+1 (555) 000-0001',
     isVerified: true,
     imageUrl: 'https://picsum.photos/300/200?random=10',
-    priceStart: 500
+    priceStart: 500,
+    email: 'elite@events.com',
+    products: [
+      { name: 'Wedding Package', price: 50000 },
+      { name: 'Birthday Basic', price: 15000 }
+    ]
   },
   {
     id: 'v2',
@@ -250,7 +256,12 @@ export const MOCK_VENDORS: Vendor[] = [
     maskedContact: '+1 (555) 000-0002',
     isVerified: true,
     imageUrl: 'https://picsum.photos/300/200?random=11',
-    priceStart: 100
+    priceStart: 100,
+    email: 'info@cityhospital.com',
+    products: [
+      { name: 'General Consultation', price: 500 },
+      { name: 'Dental Checkup', price: 800 }
+    ]
   },
   {
     id: 'v3',
@@ -263,7 +274,12 @@ export const MOCK_VENDORS: Vendor[] = [
     maskedContact: '+1 (555) 000-0003',
     isVerified: true,
     imageUrl: 'https://picsum.photos/300/200?random=12',
-    priceStart: 50
+    priceStart: 50,
+    email: 'fix@plumbers.com',
+    products: [
+      { name: 'Tap Repair', price: 150 },
+      { name: 'Pipe Fitting', price: 500 }
+    ]
   }
 ];
 

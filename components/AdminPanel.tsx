@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
-import { Trash2, Plus, Bell, Settings, ChevronDown, ChevronRight, Mail, Server, Shield } from 'lucide-react';
-import { Category, Vendor, Banner } from '../types';
+import { Trash2, Plus, Bell, Settings, ChevronDown, ChevronRight, Mail, Server, Shield, Save, Minus } from 'lucide-react';
+import { Category, Vendor, Banner, Product } from '../types';
 
 interface AdminPanelProps {
   categories: Category[];
@@ -11,6 +12,7 @@ interface AdminPanelProps {
   onAddSubCategory: (parentId: string, name: string) => void;
   onRemoveSubCategory: (parentId: string, subId: string) => void;
   onRemoveVendor: (id: string) => void;
+  onAddVendor: (vendor: Vendor) => void;
   onAddBanner: () => void;
   onRemoveBanner: (id: string) => void;
 }
@@ -18,13 +20,26 @@ interface AdminPanelProps {
 const AdminPanel: React.FC<AdminPanelProps> = ({
   categories, vendors, banners, 
   onAddCategory, onRemoveCategory, onAddSubCategory, onRemoveSubCategory,
-  onRemoveVendor, 
+  onRemoveVendor, onAddVendor,
   onAddBanner, onRemoveBanner
 }) => {
   const [activeTab, setActiveTab] = useState<'CATS' | 'VENDORS' | 'BANNERS' | 'CONFIG'>('CATS');
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
   const [newCatName, setNewCatName] = useState('');
   const [newSubCatName, setNewSubCatName] = useState<{[key:string]: string}>({});
+
+  // New Service/Vendor State
+  const [showAddVendor, setShowAddVendor] = useState(false);
+  const [newVendor, setNewVendor] = useState<Partial<Vendor> & { category: string, subCategory: string }>({
+    name: '',
+    contact: '',
+    email: '',
+    category: '',
+    subCategory: '',
+    location: { lat: 0, lng: 0, address: '' },
+    products: []
+  });
+  const [newProduct, setNewProduct] = useState<Product>({ name: '', price: 0 });
 
   // Config State
   const [emailConfig, setEmailConfig] = useState({
@@ -57,13 +72,59 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   };
 
+  const handleAddProduct = () => {
+     if (newProduct.name && newProduct.price > 0) {
+         setNewVendor({
+             ...newVendor,
+             products: [...(newVendor.products || []), newProduct]
+         });
+         setNewProduct({ name: '', price: 0 });
+     }
+  };
+
+  const handleRemoveProduct = (idx: number) => {
+      const updated = [...(newVendor.products || [])];
+      updated.splice(idx, 1);
+      setNewVendor({ ...newVendor, products: updated });
+  };
+
+  const handleSubmitVendor = () => {
+      if (!newVendor.name || !newVendor.category || !newVendor.subCategory) {
+          alert('Please fill Name and Select Category/Subcategory');
+          return;
+      }
+
+      const finalVendor: Vendor = {
+          id: 'v' + Math.random().toString(36).substr(2, 9),
+          name: newVendor.name || 'Unknown',
+          categoryIds: [newVendor.subCategory, newVendor.category],
+          description: 'Service Provider',
+          rating: 4.0,
+          isVerified: true,
+          contact: newVendor.contact || '',
+          maskedContact: newVendor.contact || '',
+          email: newVendor.email,
+          location: newVendor.location || { lat: 0, lng: 0, address: '' },
+          imageUrl: 'https://picsum.photos/300/200',
+          priceStart: newVendor.products && newVendor.products.length > 0 ? Math.min(...newVendor.products.map(p => p.price)) : 0,
+          products: newVendor.products
+      };
+
+      onAddVendor(finalVendor);
+      setShowAddVendor(false);
+      setNewVendor({ name: '', contact: '', email: '', category: '', subCategory: '', location: { lat: 0, lng: 0, address: '' }, products: [] });
+  };
+
+  // Helpers for Dropdowns
+  const selectedCategory = categories.find(c => c.id === newVendor.category);
+
   return (
     <div className="bg-white shadow-sm min-h-screen">
       <div className="border-b flex overflow-x-auto">
         <button onClick={() => setActiveTab('CATS')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'CATS' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>Categories</button>
-        <button onClick={() => setActiveTab('VENDORS')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'VENDORS' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>Vendors</button>
+        <button onClick={() => setActiveTab('VENDORS')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'VENDORS' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>Services & Vendors</button>
         <button onClick={() => setActiveTab('BANNERS')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'BANNERS' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>Banners</button>
-        <button onClick={() => setActiveTab('CONFIG')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'CONFIG' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>Configuration & Email</button>
+        <button onClick={() => setActiveTab('CONFIG')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'CONFIG' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>Configuration</button>
       </div>
 
       <div className="p-6">
@@ -127,7 +188,117 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
         {activeTab === 'VENDORS' && (
           <div>
-            <h2 className="text-xl font-bold mb-4">Registered Vendors</h2>
+            <div className="flex justify-between items-center mb-4">
+               <h2 className="text-xl font-bold">Service Providers & Vendors</h2>
+               <button 
+                 onClick={() => setShowAddVendor(!showAddVendor)} 
+                 className="bg-primary text-white px-4 py-2 rounded shadow flex items-center gap-2 hover:bg-blue-600"
+               >
+                  {showAddVendor ? <Minus className="w-4 h-4"/> : <Plus className="w-4 h-4"/>} 
+                  {showAddVendor ? 'Cancel' : 'Add Service'}
+               </button>
+            </div>
+
+            {/* ADD VENDOR FORM */}
+            {showAddVendor && (
+                <div className="bg-gray-50 border rounded p-6 mb-6 animate-fade-in">
+                    <h3 className="font-bold text-lg mb-4 text-gray-700 border-b pb-2">Add New Service</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        {/* Basic Details */}
+                        <div className="space-y-4">
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700">Service Name</label>
+                                <input className="w-full border p-2 rounded" value={newVendor.name} onChange={e => setNewVendor({...newVendor, name: e.target.value})} />
+                             </div>
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+                                <input className="w-full border p-2 rounded" value={newVendor.contact} onChange={e => setNewVendor({...newVendor, contact: e.target.value})} />
+                             </div>
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700">Email ID</label>
+                                <input className="w-full border p-2 rounded" value={newVendor.email} onChange={e => setNewVendor({...newVendor, email: e.target.value})} />
+                             </div>
+                             <div className="grid grid-cols-2 gap-4">
+                                 <div>
+                                     <label className="block text-sm font-medium text-gray-700">Category</label>
+                                     <select 
+                                        className="w-full border p-2 rounded" 
+                                        value={newVendor.category} 
+                                        onChange={e => setNewVendor({...newVendor, category: e.target.value, subCategory: ''})}
+                                     >
+                                         <option value="">Select...</option>
+                                         {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                     </select>
+                                 </div>
+                                 <div>
+                                     <label className="block text-sm font-medium text-gray-700">Sub-Category</label>
+                                     <select 
+                                        className="w-full border p-2 rounded"
+                                        value={newVendor.subCategory}
+                                        onChange={e => setNewVendor({...newVendor, subCategory: e.target.value})}
+                                        disabled={!newVendor.category}
+                                     >
+                                         <option value="">Select...</option>
+                                         {selectedCategory?.subCategories?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                     </select>
+                                 </div>
+                             </div>
+                        </div>
+                        
+                        {/* Location & Products */}
+                        <div className="space-y-4">
+                             <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Latitude</label>
+                                    <input 
+                                        type="number" 
+                                        className="w-full border p-2 rounded" 
+                                        value={newVendor.location?.lat} 
+                                        onChange={e => setNewVendor({...newVendor, location: { ...newVendor.location!, lat: parseFloat(e.target.value) }})} 
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Longitude</label>
+                                    <input 
+                                        type="number" 
+                                        className="w-full border p-2 rounded" 
+                                        value={newVendor.location?.lng} 
+                                        onChange={e => setNewVendor({...newVendor, location: { ...newVendor.location!, lng: parseFloat(e.target.value) }})} 
+                                    />
+                                </div>
+                             </div>
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700">Address</label>
+                                <textarea className="w-full border p-2 rounded" rows={2} value={newVendor.location?.address} onChange={e => setNewVendor({...newVendor, location: { ...newVendor.location!, address: e.target.value }})} />
+                             </div>
+
+                             <div className="bg-white p-3 rounded border">
+                                 <label className="block text-sm font-bold text-gray-700 mb-2">Product Price List</label>
+                                 <div className="flex gap-2 mb-2">
+                                     <input placeholder="Product Name" className="flex-1 border p-1 rounded text-sm" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} />
+                                     <input placeholder="Price" type="number" className="w-20 border p-1 rounded text-sm" value={newProduct.price || ''} onChange={e => setNewProduct({...newProduct, price: parseFloat(e.target.value)})} />
+                                     <button onClick={handleAddProduct} className="bg-green-500 text-white px-3 rounded text-sm font-bold">+</button>
+                                 </div>
+                                 <ul className="max-h-24 overflow-y-auto space-y-1">
+                                     {newVendor.products?.map((p, i) => (
+                                         <li key={i} className="flex justify-between text-sm bg-gray-50 p-1 rounded">
+                                             <span>{p.name}</span>
+                                             <div className="flex items-center gap-2">
+                                                <span className="font-mono">₹{p.price}</span>
+                                                <button onClick={() => handleRemoveProduct(i)} className="text-red-500 hover:text-red-700"><Trash2 className="w-3 h-3"/></button>
+                                             </div>
+                                         </li>
+                                     ))}
+                                 </ul>
+                             </div>
+                        </div>
+                    </div>
+                    <button onClick={handleSubmitVendor} className="w-full bg-primary text-white py-3 rounded font-bold shadow hover:bg-blue-600 flex items-center justify-center gap-2">
+                        <Save className="w-5 h-5" /> Save Service
+                    </button>
+                </div>
+            )}
+
             <div className="overflow-x-auto">
               <table className="min-w-full text-left text-sm border">
                 <thead className="bg-gray-100">
@@ -135,15 +306,28 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     <th className="p-3 border-b">Name</th>
                     <th className="p-3 border-b">Category</th>
                     <th className="p-3 border-b">Contact</th>
+                    <th className="p-3 border-b">Email</th>
+                    <th className="p-3 border-b">Products</th>
                     <th className="p-3 border-b">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {vendors.map(v => (
                     <tr key={v.id} className="hover:bg-gray-50">
-                      <td className="p-3 font-medium">{v.name}</td>
+                      <td className="p-3 font-medium">
+                          {v.name}
+                          <div className="text-xs text-gray-400 flex items-center gap-1">
+                              <Settings className="w-3 h-3" /> {v.location.lat.toFixed(2)}, {v.location.lng.toFixed(2)}
+                          </div>
+                      </td>
                       <td className="p-3 text-gray-500">{v.categoryIds.join(', ')}</td>
                       <td className="p-3 font-mono">{v.contact}</td>
+                      <td className="p-3 text-gray-500">{v.email || '-'}</td>
+                      <td className="p-3 text-xs">
+                          {v.products?.length ? (
+                              <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded">{v.products.length} Items</span>
+                          ) : '-'}
+                      </td>
                       <td className="p-3">
                          <button onClick={() => onRemoveVendor(v.id)} className="text-red-500 hover:bg-red-50 p-2 rounded"><Trash2 className="w-4 h-4" /></button>
                       </td>
