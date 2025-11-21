@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
+import { requestOtp, verifyOtp } from '../services/otpService';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -31,7 +33,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
 
   if (!isOpen) return null;
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
+    // Admin Login Logic (No OTP)
     if (userType === 'ADMIN') {
         if (email.trim().toLowerCase() === 'admin' && (password === 'admin' || password === 'admin123')) {
             onLoginSuccess('admin@dahanu.com', 'ADMIN', false);
@@ -42,22 +45,42 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
         return;
     }
 
-    if (mobile.length < 10) return alert('Enter valid mobile number');
+    // User/Vendor Logic
+    if (mobile.length < 10) return alert('Enter valid 10-digit mobile number');
     
     setIsLoading(true);
-    setTimeout(() => {
-        setIsLoading(false);
+    
+    // Call OTP Service - Pass the ID of the container for Recaptcha
+    // NOTE: Ensure you have setup your firebaseConfig.ts with valid keys!
+    const result = await requestOtp(mobile, 'recaptcha-container');
+    
+    setIsLoading(false);
+
+    if (result.success) {
         setViewState('OTP');
-    }, 1000);
+    } else {
+        alert(result.message);
+    }
   };
 
-  const handleVerify = () => {
-    if (otp === '1234') {
+  const handleVerify = async () => {
+    if (otp.length < 4) return alert('Please enter the OTP');
+
+    setIsLoading(true);
+    
+    // Call OTP Verification Service
+    const result = await verifyOtp(mobile, otp);
+    
+    setIsLoading(false);
+
+    if (result.success) {
       const generatedEmail = `${mobile}@${userType.toLowerCase()}.com`;
+      // In a real app, you would check if user exists in backend here
+      // For now, we assume new user if verification passes
       onLoginSuccess(generatedEmail, userType, true);
       onClose();
     } else {
-      alert('Invalid OTP (Try 1234)');
+      alert(result.message);
     }
   };
 
@@ -182,6 +205,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
                                      />
                                      <label className="absolute left-0 top-2 text-gray-500 text-sm transition-all peer-focus:-top-3 peer-focus:text-xs peer-focus:text-[#2874f0] peer-not-placeholder-shown:-top-3 peer-not-placeholder-shown:text-xs">Password</label>
                                  </div>
+                                 <div className="text-xs text-gray-400">Demo Credentials: admin / admin123</div>
                                  <button onClick={handleSendOtp} className="w-full bg-[#2874f0] text-white font-bold py-3 rounded-sm shadow-sm hover:bg-blue-600 transition">
                                      Login
                                  </button>
@@ -204,6 +228,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
                                  <p className="text-xs text-gray-400 mt-6 leading-relaxed">
                                     By continuing, you agree to MultiServe's <span className="text-[#2874f0] cursor-pointer">Terms of Use</span> and <span className="text-[#2874f0] cursor-pointer">Privacy Policy</span>.
                                  </p>
+
+                                 <div id="recaptcha-container"></div>
 
                                  <button 
                                     onClick={handleSendOtp}
@@ -232,7 +258,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
                                 className="w-full py-2 border-b border-gray-300 focus:border-[#2874f0] outline-none text-gray-800 transition-colors bg-transparent peer text-center tracking-[0.5em] font-bold"
                                 value={otp}
                                 onChange={(e) => setOtp(e.target.value)}
-                                maxLength={4}
+                                maxLength={6}
                                 autoFocus
                                 placeholder=" "
                             />
@@ -241,9 +267,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
 
                         <button 
                             onClick={handleVerify}
-                            className="w-full bg-[#fb641b] text-white font-bold py-3 rounded-sm shadow-sm hover:bg-orange-600 transition mt-4"
+                            disabled={isLoading}
+                            className="w-full bg-[#fb641b] text-white font-bold py-3 rounded-sm shadow-sm hover:bg-orange-600 transition mt-4 flex items-center justify-center"
                         >
-                            Verify
+                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify'}
                         </button>
                     </div>
                 )}

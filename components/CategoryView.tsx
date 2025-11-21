@@ -142,4 +142,3 @@ const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectS
 };
 
 export default CategoryView;
-
