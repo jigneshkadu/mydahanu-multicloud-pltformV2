@@ -116,7 +116,25 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   // Helpers for Dropdowns
-  const selectedCategory = categories.find(c => c.id === newVendor.category);
+  const getAvailableSubCategories = (catId: string) => {
+      const cat = categories.find(c => c.id === catId);
+      if (!cat) return [];
+
+      const flatten = (c: Category, prefix: string = ''): {id: string, name: string}[] => {
+          let list: {id: string, name: string}[] = [];
+          if (c.subCategories) {
+              c.subCategories.forEach(sub => {
+                  const displayName = prefix ? `${prefix} › ${sub.name}` : sub.name;
+                  list.push({ id: sub.id, name: displayName });
+                  list = [...list, ...flatten(sub, displayName)];
+              });
+          }
+          return list;
+      }
+      return flatten(cat);
+  };
+
+  const subCategoriesList = getAvailableSubCategories(newVendor.category);
 
   return (
     <div className="bg-white shadow-sm min-h-screen">
@@ -239,7 +257,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                                         disabled={!newVendor.category}
                                      >
                                          <option value="">Select...</option>
-                                         {selectedCategory?.subCategories?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                         {subCategoriesList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                      </select>
                                  </div>
                              </div>
