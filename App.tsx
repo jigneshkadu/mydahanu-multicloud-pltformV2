@@ -16,7 +16,7 @@ import VendorDashboard from './components/VendorDashboard';
 import MapVisualizer from './components/MapVisualizer';
 import CategoryView from './components/CategoryView';
 import BottomNav from './components/BottomNav';
-import { PhoneCall, Star, CheckCircle, MapPin, ShoppingBag, Plus } from 'lucide-react';
+import { PhoneCall, Star, CheckCircle, MapPin, ShoppingBag, Plus, Navigation } from 'lucide-react';
 import { searchNearbyServices } from './services/geminiService';
 
 // View States
@@ -150,6 +150,11 @@ const App: React.FC = () => {
     if (window.confirm(`Do you want to call ${vendor.name}?\n\nNumber: ${vendor.contact}`)) {
         window.location.href = `tel:${vendor.contact}`;
     }
+  };
+
+  const handleDirectionClick = (vendor: Vendor) => {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${vendor.location.lat},${vendor.location.lng}`;
+      window.open(url, '_blank');
   };
 
   // --- Admin Functions ---
@@ -310,12 +315,20 @@ const App: React.FC = () => {
                     </div>
                     <div className="flex flex-col justify-between items-end min-w-[140px]">
                        <div className="text-xl font-bold">₹{v.priceStart}<span className="text-xs font-normal text-gray-500"> onwards</span></div>
-                       <button 
-                          onClick={() => handleContactClick(v)}
-                          className="bg-primary text-white px-6 py-2.5 rounded-sm font-bold shadow hover:bg-blue-600 w-full flex items-center justify-center gap-2 transition-colors"
-                       >
-                          <PhoneCall className="w-4 h-4" /> Contact
-                       </button>
+                       <div className="w-full space-y-2">
+                            <button 
+                                onClick={() => handleContactClick(v)}
+                                className="bg-primary text-white px-6 py-2.5 rounded-sm font-bold shadow hover:bg-blue-600 w-full flex items-center justify-center gap-2 transition-colors"
+                            >
+                                <PhoneCall className="w-4 h-4" /> Contact
+                            </button>
+                            <button 
+                                onClick={() => handleDirectionClick(v)}
+                                className="bg-white border border-primary text-primary px-6 py-2.5 rounded-sm font-bold shadow-sm hover:bg-blue-50 w-full flex items-center justify-center gap-2 transition-colors"
+                            >
+                                <Navigation className="w-4 h-4" /> Direction
+                            </button>
+                       </div>
                     </div>
                   </div>
                 ))
@@ -360,6 +373,7 @@ const App: React.FC = () => {
             onSelectSubCategory={handleSubCategorySelect}
             vendors={vendors}
             onRegisterClick={() => { setAuthInitialMode('VENDOR'); setAuthOpen(true); }}
+            userLocation={userLocation}
           />
         )}
         
@@ -416,3 +430,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

@@ -2,6 +2,7 @@
 import React from 'react';
 import { ArrowLeft, ArrowRight, Calendar, PartyPopper, Stethoscope, Truck, Sparkles, Hammer, SprayCan, Utensils, Hotel, PlusCircle } from 'lucide-react';
 import { Category, Vendor } from '../types';
+import MapVisualizer from './MapVisualizer';
 
 interface CategoryViewProps {
   category: Category;
@@ -9,6 +10,7 @@ interface CategoryViewProps {
   onSelectSubCategory: (id: string) => void;
   vendors: Vendor[];
   onRegisterClick?: () => void;
+  userLocation: { lat: number; lng: number } | null;
 }
 
 // Helper to get all child IDs recursively
@@ -22,7 +24,7 @@ const getAllCategoryIds = (cat: Category): string[] => {
   return ids;
 };
 
-const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectSubCategory, vendors, onRegisterClick }) => {
+const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectSubCategory, vendors, onRegisterClick, userLocation }) => {
   // Dynamic Icon mapping
   const getIcon = (iconName: string | undefined) => {
     switch (iconName) {
@@ -38,7 +40,11 @@ const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectS
     }
   };
 
-  // Count vendors for a category tree
+  // Filter vendors relevant to this category tree
+  const categoryVendorIds = getAllCategoryIds(category);
+  const relevantVendors = vendors.filter(v => v.categoryIds.some(id => categoryVendorIds.includes(id)));
+
+  // Count vendors for a specific subcategory
   const getVendorCount = (cat: Category) => {
     const relevantIds = getAllCategoryIds(cat);
     return vendors.filter(v => v.categoryIds.some(id => relevantIds.includes(id))).length;
@@ -71,7 +77,7 @@ const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectS
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         {category.subCategories?.map((subCat) => (
           <div key={subCat.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition flex flex-col h-full">
             <div className="flex-1">
@@ -117,8 +123,23 @@ const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectS
             </div>
         )}
       </div>
+
+      {/* Nearby Map Section */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          Nearby {category.name} Providers
+          <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded">Map View</span>
+        </h2>
+        <div className="h-[300px] w-full">
+          <MapVisualizer 
+            vendors={relevantVendors} 
+            userLocation={userLocation}
+          />
+        </div>
+      </div>
     </div>
   );
 };
 
 export default CategoryView;
+
