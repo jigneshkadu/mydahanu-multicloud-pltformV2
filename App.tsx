@@ -26,7 +26,7 @@ const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('HOME');
   const [user, setUser] = useState<User | null>(null);
   const [isAuthOpen, setAuthOpen] = useState(false);
-  const [authInitialMode, setAuthInitialMode] = useState<'USER' | 'VENDOR'>('USER');
+  const [authInitialMode, setAuthInitialMode] = useState<'USER' | 'VENDOR' | 'ADMIN'>('USER');
   
   const [activeCategory, setActiveCategory] = useState<Category | null>(null);
   const [activeSubCategoryId, setActiveSubCategoryId] = useState<string | null>(null);
@@ -65,22 +65,35 @@ const App: React.FC = () => {
 
   // --- Handlers ---
 
-  const handleLoginSuccess = (email: string, isVendor: boolean) => {
-    let role = UserRole.USER;
-    if (email.includes('admin')) role = UserRole.ADMIN;
-    else if (isVendor || email.includes('vendor')) role = UserRole.VENDOR;
+  const handleLoginSuccess = (email: string, role: 'USER' | 'VENDOR' | 'ADMIN', isNewUser: boolean) => {
+    let userRole = UserRole.USER;
+    if (role === 'ADMIN') userRole = UserRole.ADMIN;
+    else if (role === 'VENDOR') userRole = UserRole.VENDOR;
 
     setUser({
-      id: 'u1',
-      name: email.split('@')[0],
+      id: 'u' + Math.floor(Math.random() * 1000),
+      name: email.split('@')[0] || 'User',
       email: email,
-      role: role,
+      role: userRole,
       phone: '9876543210'
     });
     setAuthOpen(false);
 
-    if (role === UserRole.ADMIN) setView('ADMIN');
-    if (role === UserRole.VENDOR) setView('VENDOR_DASHBOARD');
+    // Redirection Logic
+    if (userRole === UserRole.ADMIN) {
+        setView('ADMIN');
+    } else if (userRole === UserRole.VENDOR) {
+        if (isNewUser) {
+            setView('REGISTER');
+        } else {
+            setView('VENDOR_DASHBOARD');
+        }
+    } else {
+        // Normal User stays on current page (usually Home)
+        if (view === 'REGISTER' || view === 'ADMIN' || view === 'VENDOR_DASHBOARD') {
+             setView('HOME');
+        }
+    }
   };
 
   const handleLogout = () => {
@@ -158,7 +171,8 @@ const App: React.FC = () => {
 
   const addVendor = (v: Partial<Vendor>) => {
     setVendors([...vendors, v as Vendor]);
-    setView('ADMIN'); // Redirect to admin after register (or dashboard)
+    // After registration, go to dashboard
+    setView('VENDOR_DASHBOARD');
   };
   
   const removeVendor = (id: string) => {
@@ -200,11 +214,13 @@ const App: React.FC = () => {
           <h2 className="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
              Nearby Services <span className="text-xs font-normal text-gray-500 ml-2">(AI Powered)</span>
           </h2>
-          <MapVisualizer 
-            vendors={vendors} 
-            userLocation={userLocation}
-            aiResults={aiSearchResults}
-          />
+          <div className="h-[400px]">
+            <MapVisualizer 
+                vendors={vendors} 
+                userLocation={userLocation}
+                aiResults={aiSearchResults}
+            />
+          </div>
         </div>
       </section>
     </>
@@ -220,63 +236,39 @@ const App: React.FC = () => {
     }
 
     return (
-      <div className="container mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
-         {/* Sidebar Filters */}
-         <aside className="w-full lg:w-1/4 bg-white p-4 shadow-sm rounded h-fit sticky top-24">
-            <h3 className="font-bold text-lg mb-4 border-b pb-2">Filters</h3>
-            <div className="mb-4">
-              <h4 className="font-medium mb-2 text-sm uppercase text-gray-500">Price Range</h4>
-              <input type="range" className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
-              <div className="flex justify-between text-xs text-gray-600 mt-1">
-                 <span>Min</span><span>Max</span>
-              </div>
-            </div>
-            <div className="mb-4">
-               <h4 className="font-medium mb-2 text-sm uppercase text-gray-500">Customer Ratings</h4>
-               <div className="space-y-1">
-                 {[4, 3, 2, 1].map(r => (
-                   <label key={r} className="flex items-center gap-2 text-sm cursor-pointer">
-                     <input type="checkbox" /> {r}★ & above
-                   </label>
-                 ))}
-               </div>
-            </div>
-            <button 
-              onClick={() => setView('HOME')}
-              className="w-full border border-gray-300 py-2 rounded text-sm font-bold hover:bg-gray-50"
-            >
-               Clear All
-            </button>
-         </aside>
-
+      <div className="container mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6 h-[calc(100vh-140px)]">
+         
          {/* Main List */}
-         <div className="flex-1">
-            <div className="bg-white p-4 mb-4 shadow-sm rounded flex justify-between items-center">
-               <span className="font-medium">Showing {filtered.length} results</span>
-               <select className="border p-1 rounded text-sm">
-                  <option>Sort by: Recommended</option>
-                  <option>Price: Low to High</option>
-                  <option>Rating: High to Low</option>
-               </select>
+         <div className="flex-1 h-full overflow-y-auto pr-2">
+            <div className="bg-white p-4 mb-4 shadow-sm rounded flex justify-between items-center sticky top-0 z-10 border-b">
+               <span className="font-medium text-gray-700">Showing {filtered.length} results nearby</span>
+               <button onClick={() => setView('HOME')} className="text-sm text-blue-600 font-bold hover:underline">Clear Filters</button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 pb-24">
               {filtered.length === 0 ? (
                 <div className="bg-white p-12 text-center rounded shadow-sm">
                    <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4"/>
                    <h3 className="text-lg font-bold text-gray-600">No Vendors Found</h3>
-                   <p className="text-gray-500">Try changing your filters or search for something else.</p>
+                   <p className="text-gray-500">Try searching for something else.</p>
                    <button onClick={() => setView('HOME')} className="mt-4 text-primary font-bold">Go Home</button>
                 </div>
               ) : (
-                filtered.map(v => (
-                  <div key={v.id} className="bg-white p-4 rounded shadow-sm hover:shadow-md transition flex flex-col md:flex-row gap-4 group">
-                    <div className="w-full md:w-48 h-32 bg-gray-100 rounded overflow-hidden relative">
+                filtered.map((v, index) => (
+                  <div key={v.id} className="bg-white p-4 rounded shadow-sm hover:shadow-md transition flex flex-col md:flex-row gap-4 group border-l-4 border-l-transparent hover:border-l-[#2874f0]">
+                    <div className="w-full md:w-48 h-32 bg-gray-100 rounded overflow-hidden relative shrink-0">
                        <img src={v.imageUrl} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                        {v.isVerified && <div className="absolute top-1 left-1 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1"><CheckCircle className="w-3 h-3"/> VERIFIED</div>}
+                       
+                       {/* Location Marker Badge */}
+                       <div className="absolute bottom-1 right-1 bg-[#2874f0] text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-md">
+                          {String.fromCharCode(65 + index)}
+                       </div>
                     </div>
                     <div className="flex-1">
-                       <h3 className="text-lg font-bold text-gray-800">{v.name}</h3>
+                       <h3 className="text-lg font-bold text-gray-800 flex justify-between">
+                           {v.name}
+                       </h3>
                        <div className="flex items-center gap-2 text-sm mb-2">
                           <span className="bg-green-600 text-white px-1.5 rounded text-xs font-bold flex items-center">{v.rating} <Star className="w-3 h-3 ml-0.5 fill-current"/></span>
                           <span className="text-gray-500">120 Ratings</span>
@@ -297,6 +289,14 @@ const App: React.FC = () => {
               )}
             </div>
          </div>
+
+         {/* Map Side Panel */}
+         <aside className="hidden lg:block w-1/3 bg-white shadow-sm rounded h-full overflow-hidden sticky top-24 border">
+             <MapVisualizer 
+                vendors={filtered} 
+                userLocation={userLocation} 
+             />
+         </aside>
       </div>
     );
   };
@@ -314,6 +314,7 @@ const App: React.FC = () => {
         locationText={locationText}
         onSearch={handleSearch}
         onLogoClick={() => setView('HOME')}
+        onAdminLogin={() => { setAuthInitialMode('ADMIN'); setAuthOpen(true); }}
       />
 
       <main className="flex-1 pb-28">
@@ -362,7 +363,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <Footer />
+      <Footer onAdminLoginClick={() => { setAuthInitialMode('ADMIN'); setAuthOpen(true); }} />
       
       <BottomNav 
         categories={categories} 

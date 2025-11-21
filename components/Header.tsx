@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ShoppingCart, Menu, User as UserIcon, MapPin, Stethoscope, Utensils, Truck, LifeBuoy } from 'lucide-react';
+import { Search, ShoppingCart, Menu, User as UserIcon, MapPin, Settings } from 'lucide-react';
 import { UserRole, User } from '../types';
 
 interface HeaderProps {
@@ -13,11 +13,12 @@ interface HeaderProps {
   locationText: string;
   onSearch: (query: string) => void;
   onLogoClick: () => void;
+  onAdminLogin: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
     user, onLoginClick, onLogoutClick, onMenuClick, onAdminClick, onPartnerClick, onVendorDashboardClick,
-    locationText, onSearch, onLogoClick 
+    locationText, onSearch, onLogoClick, onAdminLogin
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -36,14 +37,7 @@ const Header: React.FC<HeaderProps> = ({
           </button>
           <div className="flex flex-col cursor-pointer" onClick={onLogoClick}>
             <div className="flex items-center gap-2">
-                {/* 4 Small Icons Grid replacing the 'D' */}
-                <div className="grid grid-cols-2 gap-0.5">
-                    <Stethoscope className="w-3.5 h-3.5 text-yellow-400" />
-                    <Utensils className="w-3.5 h-3.5 text-yellow-400" />
-                    <Truck className="w-3.5 h-3.5 text-yellow-400" />
-                    <LifeBuoy className="w-3.5 h-3.5 text-yellow-400" />
-                </div>
-                <span className="text-xl font-bold italic tracking-wider">DAHANU</span>
+                <span className="text-2xl font-bold italic tracking-wider">DAHANU</span>
             </div>
             <a href="#" className="text-xs text-gray-200 hover:underline italic flex items-center gap-0.5">
               Multiservice <span className="text-yellow-400">✦</span>
@@ -105,9 +99,8 @@ const Header: React.FC<HeaderProps> = ({
              <span className="hidden lg:inline">Home</span>
           </button>
 
-          <button className="flex items-center gap-1">
-            <ShoppingCart className="w-5 h-5" />
-            <span className="hidden lg:inline">Cart</span>
+          <button onClick={onAdminLogin} className="flex items-center gap-1 text-white hover:text-yellow-300 transition" title="Admin Login">
+            <Settings className="w-5 h-5" />
           </button>
         </div>
       </div>

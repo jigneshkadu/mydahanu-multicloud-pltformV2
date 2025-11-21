@@ -1,7 +1,11 @@
 import React from 'react';
-import { Facebook, Twitter, Youtube, Instagram } from 'lucide-react';
+import { Facebook, Twitter, Youtube, Instagram, Lock } from 'lucide-react';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  onAdminLoginClick?: () => void;
+}
+
+const Footer: React.FC<FooterProps> = ({ onAdminLoginClick }) => {
   return (
     <footer className="bg-[#172337] text-white text-sm py-8 mt-auto">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
@@ -44,8 +48,13 @@ const Footer: React.FC = () => {
       </div>
       
       <div className="border-t border-gray-700 pt-6 container mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-xs text-white">
-        <div className="flex gap-4 mb-4 md:mb-0">
+        <div className="flex gap-4 mb-4 md:mb-0 items-center">
            <span>© 2024 MultiServe Platform</span>
+           {onAdminLoginClick && (
+             <button onClick={onAdminLoginClick} className="flex items-center gap-1 text-gray-500 hover:text-white ml-4">
+               <Lock className="w-3 h-3" /> Admin
+             </button>
+           )}
         </div>
         <img src="https://static-assets-web.flixcart.com/fk-p-linchpin-web/fk-cp-zion/img/payment-method_69e7ec.svg" alt="Payments" className="h-4" />
       </div>
