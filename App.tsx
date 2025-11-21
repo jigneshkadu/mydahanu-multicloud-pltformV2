@@ -16,7 +16,7 @@ import VendorDashboard from './components/VendorDashboard';
 import MapVisualizer from './components/MapVisualizer';
 import CategoryView from './components/CategoryView';
 import BottomNav from './components/BottomNav';
-import { PhoneCall, Star, CheckCircle, MapPin, ShoppingBag } from 'lucide-react';
+import { PhoneCall, Star, CheckCircle, MapPin, ShoppingBag, Plus } from 'lucide-react';
 import { searchNearbyServices } from './services/geminiService';
 
 // View States
@@ -245,7 +245,15 @@ const App: React.FC = () => {
          {/* Main List */}
          <div className="flex-1 h-full overflow-y-auto pr-2">
             <div className="bg-white p-4 mb-4 shadow-sm rounded flex justify-between items-center sticky top-0 z-10 border-b">
-               <span className="font-medium text-gray-700">Showing {filtered.length} results nearby</span>
+               <div className="flex items-center gap-4">
+                   <span className="font-medium text-gray-700">Showing {filtered.length} results nearby</span>
+                   <button 
+                        onClick={() => { setAuthInitialMode('VENDOR'); setAuthOpen(true); }}
+                        className="text-xs bg-secondary text-white px-3 py-1 rounded shadow hover:bg-orange-600 flex items-center gap-1"
+                   >
+                        <Plus className="w-3 h-3" /> List your Business
+                   </button>
+               </div>
                <button onClick={() => setView('HOME')} className="text-sm text-blue-600 font-bold hover:underline">Clear Filters</button>
             </div>
 
@@ -254,8 +262,15 @@ const App: React.FC = () => {
                 <div className="bg-white p-12 text-center rounded shadow-sm">
                    <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4"/>
                    <h3 className="text-lg font-bold text-gray-600">No Vendors Found</h3>
-                   <p className="text-gray-500">Try searching for something else.</p>
-                   <button onClick={() => setView('HOME')} className="mt-4 text-primary font-bold">Go Home</button>
+                   <p className="text-gray-500 mb-6">Try searching for something else.</p>
+                   
+                   <button 
+                     onClick={() => { setAuthInitialMode('VENDOR'); setAuthOpen(true); }}
+                     className="bg-primary text-white px-6 py-2 rounded font-bold"
+                   >
+                     Be the first to join here!
+                   </button>
+                   <button onClick={() => setView('HOME')} className="block mt-4 text-primary text-sm font-bold hover:underline mx-auto">Go Home</button>
                 </div>
               ) : (
                 filtered.map((v, index) => (
@@ -330,6 +345,7 @@ const App: React.FC = () => {
             onBack={() => setView('HOME')}
             onSelectSubCategory={handleSubCategorySelect}
             vendors={vendors}
+            onRegisterClick={() => { setAuthInitialMode('VENDOR'); setAuthOpen(true); }}
           />
         )}
         

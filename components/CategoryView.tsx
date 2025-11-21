@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { ArrowLeft, ArrowRight, Calendar, PartyPopper, Stethoscope, Truck, Sparkles, Hammer, SprayCan, Utensils, Hotel } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, PartyPopper, Stethoscope, Truck, Sparkles, Hammer, SprayCan, Utensils, Hotel, PlusCircle } from 'lucide-react';
 import { Category, Vendor } from '../types';
 
 interface CategoryViewProps {
@@ -7,6 +8,7 @@ interface CategoryViewProps {
   onBack: () => void;
   onSelectSubCategory: (id: string) => void;
   vendors: Vendor[];
+  onRegisterClick?: () => void;
 }
 
 // Helper to get all child IDs recursively
@@ -20,7 +22,7 @@ const getAllCategoryIds = (cat: Category): string[] => {
   return ids;
 };
 
-const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectSubCategory, vendors }) => {
+const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectSubCategory, vendors, onRegisterClick }) => {
   // Dynamic Icon mapping
   const getIcon = (iconName: string | undefined) => {
     switch (iconName) {
@@ -51,11 +53,22 @@ const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectS
         <ArrowLeft className="w-5 h-5" /> Back
       </button>
 
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center shadow-md">
-          {getIcon(category.icon)}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center shadow-md">
+            {getIcon(category.icon)}
+          </div>
+          <h1 className="text-3xl font-bold text-gray-800">{category.name}</h1>
         </div>
-        <h1 className="text-3xl font-bold text-gray-800">{category.name}</h1>
+        
+        {onRegisterClick && (
+            <button 
+              onClick={onRegisterClick}
+              className="flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-lg shadow hover:bg-orange-600 transition font-bold"
+            >
+              <PlusCircle className="w-5 h-5" /> List your Business
+            </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -82,6 +95,21 @@ const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectS
             </div>
           </div>
         ))}
+
+        {/* Add Service / Register CTA Card */}
+        <div className="bg-blue-50 rounded-xl p-6 border-2 border-dashed border-blue-200 flex flex-col items-center justify-center text-center h-full min-h-[200px]">
+           <div className="bg-white p-3 rounded-full mb-4 shadow-sm">
+             <PlusCircle className="w-8 h-8 text-primary" />
+           </div>
+           <h3 className="text-lg font-bold text-gray-800 mb-2">Own a Service?</h3>
+           <p className="text-sm text-gray-600 mb-4">Join our platform and reach thousands of customers in Dahanu.</p>
+           <button 
+             onClick={onRegisterClick} 
+             className="text-primary font-bold hover:underline"
+           >
+             Register Now &rarr;
+           </button>
+        </div>
         
         {(!category.subCategories || category.subCategories.length === 0) && (
             <div className="col-span-3 text-center py-12 text-gray-400">
