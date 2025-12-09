@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Trash2, Plus, Bell, Settings, ChevronDown, ChevronRight, Mail, Server, Shield, Save, Minus, Upload, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Trash2, Plus, Bell, Settings, ChevronDown, ChevronRight, Mail, Server, Shield, Save, Minus, Upload, CheckCircle, XCircle, AlertCircle, FileText } from 'lucide-react';
 import { Category, Vendor, Banner, Product, SystemConfig } from '../types';
 
 interface AdminPanelProps {
@@ -14,7 +14,7 @@ interface AdminPanelProps {
   onRemoveSubCategory: (parentId: string, subId: string) => void;
   onRemoveVendor: (id: string) => void;
   onAddVendor: (vendor: Vendor) => void;
-  onApproveVendor: (id: string) => void; // New prop
+  onApproveVendor: (id: string) => void;
   onAddBanner: (imageUrl: string, link: string, altText: string) => void;
   onRemoveBanner: (id: string) => void;
   onSaveConfig: (config: SystemConfig) => void;
@@ -27,7 +27,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onAddBanner, onRemoveBanner,
   onSaveConfig
 }) => {
-  const [activeTab, setActiveTab] = useState<'CATS' | 'VENDORS' | 'BANNERS' | 'CONFIG'>('CATS');
+  const [activeTab, setActiveTab] = useState<'CATS' | 'APPROVALS' | 'VENDORS' | 'BANNERS' | 'CONFIG'>('CATS');
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
   const [newCatName, setNewCatName] = useState('');
   const [newSubCatName, setNewSubCatName] = useState<{[key:string]: string}>({});
@@ -169,9 +169,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     <div className="bg-white shadow-sm min-h-screen">
       <div className="border-b flex overflow-x-auto">
         <button onClick={() => setActiveTab('CATS')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'CATS' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>Categories</button>
+        
+        <button onClick={() => setActiveTab('APPROVALS')} className={`px-6 py-4 font-medium whitespace-nowrap flex items-center gap-2 ${activeTab === 'APPROVALS' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>
+            Approvals
+            {pendingVendors.length > 0 ? (
+                <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">{pendingVendors.length}</span>
+            ) : (
+                <span className="bg-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded-full">0</span>
+            )}
+        </button>
+
         <button onClick={() => setActiveTab('VENDORS')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'VENDORS' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>
             Services & Vendors
-            {pendingVendors.length > 0 && <span className="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{pendingVendors.length}</span>}
         </button>
         <button onClick={() => setActiveTab('BANNERS')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'BANNERS' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>Banners</button>
         <button onClick={() => setActiveTab('CONFIG')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'CONFIG' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>Configuration</button>
@@ -236,36 +245,53 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         )}
 
-        {activeTab === 'VENDORS' && (
-          <div>
-            {/* PENDING APPROVALS SECTION */}
-            {pendingVendors.length > 0 && (
-                <div className="mb-8 border-b-2 border-orange-200 pb-8 bg-orange-50 p-4 rounded-lg">
-                    <h3 className="text-lg font-bold text-orange-800 mb-4 flex items-center gap-2">
-                        <AlertCircle className="w-5 h-5"/> Pending Approvals ({pendingVendors.length})
-                    </h3>
+        {/* APPROVALS TAB CONTENT */}
+        {activeTab === 'APPROVALS' && (
+             <div className="animate-fade-in">
+                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                    <FileText className="w-6 h-6"/> Pending Registrations
+                </h2>
+
+                {pendingVendors.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <CheckCircle className="w-12 h-12 text-green-400 mb-2"/>
+                        <p className="text-gray-500 font-medium">All caught up! No pending approvals.</p>
+                    </div>
+                ) : (
                     <div className="grid gap-4">
                         {pendingVendors.map(v => (
-                            <div key={v.id} className="bg-white p-4 rounded shadow-sm border border-orange-200 flex flex-col md:flex-row justify-between items-center">
-                                <div className="mb-2 md:mb-0">
-                                    <h4 className="font-bold">{v.name}</h4>
-                                    <p className="text-sm text-gray-600">{v.categoryIds.join(', ')} • {v.contact}</p>
-                                    <p className="text-xs text-gray-500">{v.location.address}</p>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button onClick={() => onRemoveVendor(v.id)} className="flex items-center gap-1 bg-red-100 text-red-700 px-3 py-1.5 rounded text-sm hover:bg-red-200">
-                                        <XCircle className="w-4 h-4"/> Reject
-                                    </button>
-                                    <button onClick={() => onApproveVendor(v.id)} className="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700 font-bold">
-                                        <CheckCircle className="w-4 h-4"/> Approve
-                                    </button>
+                            <div key={v.id} className="bg-white p-5 rounded-lg shadow-sm border border-l-4 border-l-orange-400 hover:shadow-md transition">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                                    <div className="mb-4 md:mb-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <h4 className="font-bold text-lg text-gray-800">{v.name}</h4>
+                                            <span className="bg-orange-100 text-orange-800 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">Pending</span>
+                                        </div>
+                                        <div className="text-sm text-gray-600 space-y-1">
+                                            <p className="flex items-center gap-2"><span className="font-medium w-16">Contact:</span> {v.contact}</p>
+                                            <p className="flex items-center gap-2"><span className="font-medium w-16">Category:</span> {v.categoryIds.join(', ')}</p>
+                                            <p className="flex items-center gap-2"><span className="font-medium w-16">Location:</span> {v.location.address}</p>
+                                            <p className="flex items-center gap-2"><span className="font-medium w-16">Desc:</span> <span className="italic">{v.description || 'N/A'}</span></p>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto">
+                                        <button onClick={() => onApproveVendor(v.id)} className="flex-1 flex items-center justify-center gap-1 bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 font-bold transition">
+                                            <CheckCircle className="w-4 h-4"/> Approve
+                                        </button>
+                                        <button onClick={() => onRemoveVendor(v.id)} className="flex-1 flex items-center justify-center gap-1 bg-white border border-red-200 text-red-600 px-4 py-2 rounded shadow-sm hover:bg-red-50 text-sm font-medium transition">
+                                            <XCircle className="w-4 h-4"/> Reject
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
-                </div>
-            )}
+                )}
+             </div>
+        )}
 
+        {activeTab === 'VENDORS' && (
+          <div>
             <div className="flex justify-between items-center mb-4">
                <h2 className="text-xl font-bold">Active Service Providers</h2>
                <button 
@@ -412,7 +438,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     </tr>
                   ))}
                   {approvedVendors.length === 0 && (
-                      <tr><td colSpan={6} className="p-4 text-center text-gray-500 italic">No active vendors found. Check pending tab.</td></tr>
+                      <tr><td colSpan={6} className="p-4 text-center text-gray-500 italic">No active vendors found.</td></tr>
                   )}
                 </tbody>
               </table>
