@@ -1,3 +1,4 @@
+
 import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight, PartyPopper, Stethoscope, Truck, Sparkles, Hammer, SprayCan, Utensils, Hotel, Calendar } from 'lucide-react';
 import { Category } from '../types';
@@ -39,34 +40,34 @@ const BottomNav: React.FC<BottomNavProps> = ({ categories, onCategoryClick }) =>
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-primary text-white shadow-[0_-2px_10px_rgba(0,0,0,0.2)] z-50 h-24 flex items-center">
+    <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] z-50 h-28 flex items-center border-t border-gray-200 pb-safe">
        {/* Scroll Button Left */}
-       <button onClick={() => scroll('left')} className="p-2 h-full bg-primary hover:bg-blue-700 z-10 hidden md:flex items-center justify-center border-r border-blue-500">
-         <ChevronLeft className="w-6 h-6" />
+       <button onClick={() => scroll('left')} className="p-2 h-full bg-white hover:bg-gray-50 z-10 hidden md:flex items-center justify-center border-r border-gray-200">
+         <ChevronLeft className="w-6 h-6 text-gray-600" />
        </button>
 
        {/* Scrollable Container */}
        <div 
          ref={scrollRef}
-         className="flex-1 flex items-center overflow-x-auto gap-2 px-2 no-scrollbar h-full"
+         className="flex-1 flex items-center overflow-x-auto gap-3 px-3 no-scrollbar h-full py-2"
        >
           {categories.map(cat => (
              <button 
                 key={cat.id} 
                 onClick={() => onCategoryClick(cat)}
-                className="flex flex-col items-center justify-center min-w-[85px] h-[80px] rounded-lg hover:bg-white/10 transition-colors"
+                className="flex flex-col items-center justify-center min-w-[90px] h-[85px] rounded-lg bg-primary hover:bg-[#7aa818] transition-all shadow-sm hover:shadow-md group active:scale-95"
              >
-                <div className="text-white">
+                <div className="text-white transition-colors">
                    {getIcon(cat.icon)}
                 </div>
-                <span className="text-[11px] font-medium text-center leading-tight px-1 truncate w-full">{cat.name}</span>
+                <span className="text-[11px] font-bold text-center leading-tight px-1 truncate w-full text-white">{cat.name}</span>
              </button>
           ))}
        </div>
 
        {/* Scroll Button Right */}
-       <button onClick={() => scroll('right')} className="p-2 h-full bg-primary hover:bg-blue-700 z-10 hidden md:flex items-center justify-center border-l border-blue-500">
-         <ChevronRight className="w-6 h-6" />
+       <button onClick={() => scroll('right')} className="p-2 h-full bg-white hover:bg-gray-50 z-10 hidden md:flex items-center justify-center border-l border-gray-200">
+         <ChevronRight className="w-6 h-6 text-gray-600" />
        </button>
     </div>
   );

@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { MapPin, Navigation } from 'lucide-react';
 import { Vendor } from '../types';
@@ -70,11 +71,11 @@ const MapVisualizer: React.FC<MapVisualizerProps> = ({ vendors, userLocation, ai
   };
 
   return (
-    <div className="w-full h-full min-h-[400px] bg-blue-50 relative overflow-hidden border border-gray-300 rounded-lg shadow-inner">
+    <div className="w-full h-full min-h-[400px] bg-gray-50 relative overflow-hidden border border-gray-300 rounded-lg shadow-inner">
       {/* Background Grid */}
       <div className="absolute inset-0 opacity-10" 
            style={{
-             backgroundImage: 'linear-gradient(#2874f0 1px, transparent 1px), linear-gradient(90deg, #2874f0 1px, transparent 1px)',
+             backgroundImage: 'linear-gradient(#8bbe1b 1px, transparent 1px), linear-gradient(90deg, #8bbe1b 1px, transparent 1px)',
              backgroundSize: '40px 40px'
            }}>
       </div>
@@ -88,15 +89,15 @@ const MapVisualizer: React.FC<MapVisualizerProps> = ({ vendors, userLocation, ai
          >
             {m.type === 'USER' ? (
                 <>
-                    <div className="w-4 h-4 bg-blue-600 rounded-full animate-ping absolute opacity-75"></div>
-                    <div className="w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-lg z-10"></div>
+                    <div className="w-4 h-4 bg-gray-600 rounded-full animate-ping absolute opacity-75"></div>
+                    <div className="w-4 h-4 bg-gray-600 rounded-full border-2 border-white shadow-lg z-10"></div>
                     <span className="bg-white px-2 py-0.5 rounded text-[10px] font-bold shadow mt-1 z-20 whitespace-nowrap">You</span>
                 </>
             ) : (
                 <>
                     <div className="relative">
-                        <MapPin className="w-10 h-10 text-[#2874f0] drop-shadow-md group-hover:-translate-y-1 transition-transform" fill="#2874f0" />
-                        <span className="absolute top-2 left-1/2 -translate-x-1/2 text-white text-xs font-bold">{m.label}</span>
+                        <MapPin className="w-10 h-10 text-primary drop-shadow-md group-hover:-translate-y-1 transition-transform" fill="#8bbe1b" />
+                        <span className="absolute top-2 left-1/2 -translate-x-1/2 text-gray-800 text-xs font-bold">{m.label}</span>
                     </div>
                     <div className="bg-white p-2 rounded shadow-lg text-xs w-32 text-center opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full mb-1 z-30 pointer-events-none">
                         <p className="font-bold truncate">{m.name}</p>
@@ -110,7 +111,7 @@ const MapVisualizer: React.FC<MapVisualizerProps> = ({ vendors, userLocation, ai
       {/* Map Controls Overlay */}
       <div className="absolute bottom-4 right-4 flex flex-col gap-2">
          <button className="bg-white p-2 rounded shadow hover:bg-gray-50" title="Recenter">
-           <Navigation className="w-5 h-5 text-blue-600" />
+           <Navigation className="w-5 h-5 text-primary" />
          </button>
       </div>
       

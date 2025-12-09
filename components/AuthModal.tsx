@@ -116,7 +116,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
         >
             <svg className="w-5 h-5" viewBox="0 0 23 23">
                 <path fill="#f35325" d="M1 1h10v10H1z"/>
-                <path fill="#81bc06" d="M12 1h10v10H12z"/>
+                <path fill="#81bc06" d="M12 1h10v10H1z"/>
                 <path fill="#05a6f0" d="M1 12h10v10H1z"/>
                 <path fill="#ffba08" d="M12 12h10v10H12z"/>
             </svg>
@@ -130,18 +130,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
       <div className="bg-white rounded w-full max-w-3xl flex overflow-hidden relative shadow-2xl h-[528px]">
         <button 
             onClick={onClose} 
-            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 z-20 p-2"
+            className="absolute top-2 right-2 text-white/80 hover:text-white z-20 p-2"
         >
           <X className="w-6 h-6" />
         </button>
 
-        {/* --- LEFT PANEL (BLUE) --- */}
-        <div className="w-2/5 bg-[#2874f0] p-10 flex flex-col justify-between text-white relative">
+        {/* --- LEFT PANEL (Primary Blue) --- */}
+        <div className="w-2/5 bg-primary p-10 flex flex-col justify-between text-white relative">
             <div>
                 <h2 className="text-3xl font-bold mb-4">
                     {userType === 'ADMIN' ? 'Admin' : 'Login'}
                 </h2>
-                <p className="text-lg text-gray-200 leading-snug">
+                <p className="text-lg text-white/90 leading-snug font-medium">
                     {userType === 'ADMIN' 
                         ? 'Secure access for system management.' 
                         : 'Get access to your Orders, Wishlist and Recommendations'}
@@ -166,13 +166,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
                     <div className="flex gap-6 mb-8 border-b border-gray-200 pb-1">
                         <button 
                             onClick={() => { setUserType('USER'); setViewState('MOBILE_INPUT'); }}
-                            className={`text-sm font-semibold pb-2 transition-colors ${userType === 'USER' ? 'text-[#2874f0] border-b-2 border-[#2874f0]' : 'text-gray-500 hover:text-gray-800'}`}
+                            className={`text-sm font-semibold pb-2 transition-colors ${userType === 'USER' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-800'}`}
                         >
                             User Login
                         </button>
                         <button 
                             onClick={() => { setUserType('VENDOR'); setViewState('MOBILE_INPUT'); }}
-                            className={`text-sm font-semibold pb-2 transition-colors ${userType === 'VENDOR' ? 'text-[#2874f0] border-b-2 border-[#2874f0]' : 'text-gray-500 hover:text-gray-800'}`}
+                            className={`text-sm font-semibold pb-2 transition-colors ${userType === 'VENDOR' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-800'}`}
                         >
                             Vendor / Partner
                         </button>
@@ -188,25 +188,25 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
                                 <div className="relative group">
                                      <input 
                                          type="text" 
-                                         className="w-full py-2 border-b border-gray-300 focus:border-[#2874f0] outline-none text-gray-800 transition-colors bg-transparent peer"
+                                         className="w-full py-2 border-b border-gray-300 focus:border-primary outline-none text-gray-800 transition-colors bg-transparent peer"
                                          value={email}
                                          onChange={(e) => setEmail(e.target.value)}
                                          placeholder=" "
                                      />
-                                     <label className="absolute left-0 top-2 text-gray-500 text-sm transition-all peer-focus:-top-3 peer-focus:text-xs peer-focus:text-[#2874f0] peer-not-placeholder-shown:-top-3 peer-not-placeholder-shown:text-xs">Admin ID</label>
+                                     <label className="absolute left-0 top-2 text-gray-500 text-sm transition-all peer-focus:-top-3 peer-focus:text-xs peer-focus:text-primary peer-not-placeholder-shown:-top-3 peer-not-placeholder-shown:text-xs">Admin ID</label>
                                  </div>
                                  <div className="relative group">
                                      <input 
                                          type="password" 
-                                         className="w-full py-2 border-b border-gray-300 focus:border-[#2874f0] outline-none text-gray-800 transition-colors bg-transparent peer"
+                                         className="w-full py-2 border-b border-gray-300 focus:border-primary outline-none text-gray-800 transition-colors bg-transparent peer"
                                          value={password}
                                          onChange={(e) => setPassword(e.target.value)}
                                          placeholder=" "
                                      />
-                                     <label className="absolute left-0 top-2 text-gray-500 text-sm transition-all peer-focus:-top-3 peer-focus:text-xs peer-focus:text-[#2874f0] peer-not-placeholder-shown:-top-3 peer-not-placeholder-shown:text-xs">Password</label>
+                                     <label className="absolute left-0 top-2 text-gray-500 text-sm transition-all peer-focus:-top-3 peer-focus:text-xs peer-focus:text-primary peer-not-placeholder-shown:-top-3 peer-not-placeholder-shown:text-xs">Password</label>
                                  </div>
                                  <div className="text-xs text-gray-400">Demo Credentials: admin / admin123</div>
-                                 <button onClick={handleSendOtp} className="w-full bg-[#2874f0] text-white font-bold py-3 rounded-sm shadow-sm hover:bg-blue-600 transition">
+                                 <button onClick={handleSendOtp} className="w-full bg-secondary text-white font-bold py-3 rounded-sm shadow-sm hover:bg-orange-600 transition">
                                      Login
                                  </button>
                              </>
@@ -216,17 +216,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
                                  <div className="relative group">
                                     <input 
                                         type="tel" 
-                                        className="w-full py-2 border-b border-gray-300 focus:border-[#2874f0] outline-none text-gray-800 transition-colors bg-transparent peer"
+                                        className="w-full py-2 border-b border-gray-300 focus:border-primary outline-none text-gray-800 transition-colors bg-transparent peer"
                                         value={mobile}
                                         onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
                                         maxLength={10}
                                         placeholder=" "
                                     />
-                                    <label className="absolute left-0 top-2 text-gray-500 text-sm transition-all peer-focus:-top-3 peer-focus:text-xs peer-focus:text-[#2874f0] peer-not-placeholder-shown:-top-3 peer-not-placeholder-shown:text-xs">Enter Mobile Number</label>
+                                    <label className="absolute left-0 top-2 text-gray-500 text-sm transition-all peer-focus:-top-3 peer-focus:text-xs peer-focus:text-primary peer-not-placeholder-shown:-top-3 peer-not-placeholder-shown:text-xs">Enter Mobile Number</label>
                                  </div>
                                  
                                  <p className="text-xs text-gray-400 mt-6 leading-relaxed">
-                                    By continuing, you agree to MultiServe's <span className="text-[#2874f0] cursor-pointer">Terms of Use</span> and <span className="text-[#2874f0] cursor-pointer">Privacy Policy</span>.
+                                    By continuing, you agree to MultiServe's <span className="text-primary cursor-pointer">Terms of Use</span> and <span className="text-primary cursor-pointer">Privacy Policy</span>.
                                  </p>
 
                                  <div id="recaptcha-container"></div>
@@ -234,7 +234,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
                                  <button 
                                     onClick={handleSendOtp}
                                     disabled={isLoading}
-                                    className="w-full bg-[#fb641b] text-white font-bold py-3 rounded-sm shadow-sm hover:bg-orange-600 transition mt-2 flex items-center justify-center"
+                                    className="w-full bg-secondary text-white font-bold py-3 rounded-sm shadow-sm hover:bg-orange-600 transition mt-2 flex items-center justify-center"
                                  >
                                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Request OTP'}
                                  </button>
@@ -249,26 +249,26 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
                         <div className="text-sm text-gray-600">
                             Please enter the OTP sent to <br/>
                             <span className="font-medium text-gray-900">+91 {mobile}</span> 
-                            <button onClick={() => { setViewState('MOBILE_INPUT'); setOtp(''); }} className="text-[#2874f0] ml-2 text-xs font-bold">Change</button>
+                            <button onClick={() => { setViewState('MOBILE_INPUT'); setOtp(''); }} className="text-primary ml-2 text-xs font-bold">Change</button>
                         </div>
 
                         <div className="relative group">
                             <input 
                                 type="text" 
-                                className="w-full py-2 border-b border-gray-300 focus:border-[#2874f0] outline-none text-gray-800 transition-colors bg-transparent peer text-center tracking-[0.5em] font-bold"
+                                className="w-full py-2 border-b border-gray-300 focus:border-primary outline-none text-gray-800 transition-colors bg-transparent peer text-center tracking-[0.5em] font-bold"
                                 value={otp}
                                 onChange={(e) => setOtp(e.target.value)}
                                 maxLength={6}
                                 autoFocus
                                 placeholder=" "
                             />
-                            <label className="absolute left-0 top-2 text-gray-500 text-sm transition-all peer-focus:-top-3 peer-focus:text-xs peer-focus:text-[#2874f0] peer-not-placeholder-shown:-top-3 peer-not-placeholder-shown:text-xs">Enter OTP</label>
+                            <label className="absolute left-0 top-2 text-gray-500 text-sm transition-all peer-focus:-top-3 peer-focus:text-xs peer-focus:text-primary peer-not-placeholder-shown:-top-3 peer-not-placeholder-shown:text-xs">Enter OTP</label>
                         </div>
 
                         <button 
                             onClick={handleVerify}
                             disabled={isLoading}
-                            className="w-full bg-[#fb641b] text-white font-bold py-3 rounded-sm shadow-sm hover:bg-orange-600 transition mt-4 flex items-center justify-center"
+                            className="w-full bg-secondary text-white font-bold py-3 rounded-sm shadow-sm hover:bg-orange-600 transition mt-4 flex items-center justify-center"
                         >
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify'}
                         </button>
@@ -281,7 +281,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
                 <div className="mt-auto">
                     {viewState === 'MOBILE_INPUT' && renderSocialLinks()}
                     <div className="mt-8 text-center">
-                        <button className="text-[#2874f0] font-bold text-sm hover:underline">
+                        <button className="text-primary font-bold text-sm hover:underline">
                             New to Dahanu? Create an account
                         </button>
                     </div>

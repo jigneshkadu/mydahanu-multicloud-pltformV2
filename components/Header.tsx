@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Search, ShoppingCart, Menu, User as UserIcon, MapPin, Settings } from 'lucide-react';
 import { UserRole, User } from '../types';
@@ -33,13 +34,13 @@ const Header: React.FC<HeaderProps> = ({
         {/* Logo Area */}
         <div className="flex items-center gap-2">
           <button onClick={onMenuClick} className="lg:hidden p-1">
-            <Menu className="w-6 h-6" />
+            <Menu className="w-6 h-6 text-white" />
           </button>
           <div className="flex flex-col cursor-pointer" onClick={onLogoClick}>
             <div className="flex items-center gap-2">
                 <span className="text-2xl font-bold italic tracking-wider">DAHANU</span>
             </div>
-            <a href="#" className="text-xs text-gray-200 hover:underline italic flex items-center gap-0.5">
+            <a href="#" className="text-xs text-white/80 hover:underline italic flex items-center gap-0.5">
               Multiservice <span className="text-yellow-400">✦</span>
             </a>
           </div>
@@ -48,12 +49,12 @@ const Header: React.FC<HeaderProps> = ({
         {/* Search Bar */}
         <form onSubmit={handleSearchSubmit} className="flex-1 max-w-2xl relative hidden md:flex">
           <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-             <Search className="h-5 w-5 text-gray-400" />
+             <Search className="h-5 w-5 text-gray-500" />
           </div>
           <input
             type="text"
             placeholder="Search for services, products, and more (AI Enabled)"
-            className="w-full py-2.5 pl-10 pr-4 rounded-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm"
+            className="w-full py-2.5 pl-10 pr-4 rounded-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-lime-200 shadow-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -64,7 +65,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-6 font-medium">
           {user ? (
             <div className="relative group">
-              <button className="flex items-center gap-1 hover:text-gray-100">
+              <button className="flex items-center gap-1 hover:text-gray-200 transition-colors">
                 {user.name}
               </button>
               <div className="absolute right-0 top-full w-48 bg-white text-gray-800 shadow-lg rounded-sm hidden group-hover:block pt-2">
@@ -81,7 +82,7 @@ const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
           ) : (
-            <button onClick={onLoginClick} className="bg-white text-primary px-8 py-1 font-bold rounded-sm shadow-sm hover:bg-gray-100">
+            <button onClick={onLoginClick} className="bg-white text-primary px-8 py-1 font-bold rounded-sm shadow-sm hover:bg-gray-50">
               Login
             </button>
           )}
@@ -91,15 +92,15 @@ const Header: React.FC<HeaderProps> = ({
              <span className="truncate max-w-[100px]">{locationText}</span>
           </div>
 
-          <button onClick={onPartnerClick} className="flex items-center gap-1 text-white hover:text-yellow-300 transition">
+          <button onClick={onPartnerClick} className="flex items-center gap-1 hover:text-gray-200 transition">
             <span className="hidden lg:inline">Partner with us</span>
           </button>
           
-          <button onClick={onLogoClick} className="flex items-center gap-1">
+          <button onClick={onLogoClick} className="flex items-center gap-1 hover:text-gray-200 transition">
              <span className="hidden lg:inline">Home</span>
           </button>
 
-          <button onClick={onAdminLogin} className="flex items-center gap-1 text-white hover:text-yellow-300 transition" title="Admin Login">
+          <button onClick={onAdminLogin} className="flex items-center gap-1 hover:text-gray-200 transition" title="Admin Login">
             <Settings className="w-5 h-5" />
           </button>
         </div>
@@ -115,7 +116,7 @@ const Header: React.FC<HeaderProps> = ({
              value={searchQuery}
              onChange={(e) => setSearchQuery(e.target.value)}
            />
-           <Search className="absolute right-3 top-2.5 h-5 w-5 text-primary" />
+           <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-500" />
         </form>
       </div>
     </header>
