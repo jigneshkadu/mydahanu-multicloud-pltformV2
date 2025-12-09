@@ -29,6 +29,7 @@ export interface Vendor {
   contact: string; // Real contact (hidden)
   maskedContact: string; // Public contact
   isVerified: boolean;
+  isApproved: boolean; // New field for approval workflow
   imageUrl: string;
   priceStart: number;
   email?: string;
@@ -69,4 +70,13 @@ export interface Order {
   status: OrderStatus;
   amount?: number;
   address: string;
+}
+
+export interface SystemConfig {
+  smtpServer: string;
+  port: string;
+  username: string;
+  password?: string;
+  alertEmail: string;
+  enableAlerts: boolean;
 }

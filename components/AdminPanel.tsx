@@ -1,32 +1,40 @@
 
-import React, { useState } from 'react';
-import { Trash2, Plus, Bell, Settings, ChevronDown, ChevronRight, Mail, Server, Shield, Save, Minus } from 'lucide-react';
-import { Category, Vendor, Banner, Product } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Trash2, Plus, Bell, Settings, ChevronDown, ChevronRight, Mail, Server, Shield, Save, Minus, Upload, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Category, Vendor, Banner, Product, SystemConfig } from '../types';
 
 interface AdminPanelProps {
   categories: Category[];
   vendors: Vendor[];
   banners: Banner[];
+  config: SystemConfig;
   onAddCategory: (name: string) => void;
   onRemoveCategory: (id: string) => void;
   onAddSubCategory: (parentId: string, name: string) => void;
   onRemoveSubCategory: (parentId: string, subId: string) => void;
   onRemoveVendor: (id: string) => void;
   onAddVendor: (vendor: Vendor) => void;
-  onAddBanner: () => void;
+  onApproveVendor: (id: string) => void; // New prop
+  onAddBanner: (imageUrl: string, link: string, altText: string) => void;
   onRemoveBanner: (id: string) => void;
+  onSaveConfig: (config: SystemConfig) => void;
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({
-  categories, vendors, banners, 
+  categories, vendors, banners, config,
   onAddCategory, onRemoveCategory, onAddSubCategory, onRemoveSubCategory,
-  onRemoveVendor, onAddVendor,
-  onAddBanner, onRemoveBanner
+  onRemoveVendor, onAddVendor, onApproveVendor,
+  onAddBanner, onRemoveBanner,
+  onSaveConfig
 }) => {
   const [activeTab, setActiveTab] = useState<'CATS' | 'VENDORS' | 'BANNERS' | 'CONFIG'>('CATS');
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
   const [newCatName, setNewCatName] = useState('');
   const [newSubCatName, setNewSubCatName] = useState<{[key:string]: string}>({});
+
+  // Banner State
+  const [showAddBanner, setShowAddBanner] = useState(false);
+  const [newBanner, setNewBanner] = useState({ imageUrl: '', link: '', altText: '' });
 
   // New Service/Vendor State
   const [showAddVendor, setShowAddVendor] = useState(false);
@@ -41,14 +49,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   });
   const [newProduct, setNewProduct] = useState<Product>({ name: '', price: 0 });
 
-  // Config State
-  const [emailConfig, setEmailConfig] = useState({
-    smtpServer: 'smtp.gmail.com',
-    port: '587',
-    username: 'admin@dahanu.com',
-    alertEmail: 'alerts@dahanu.com',
-    enableAlerts: true
-  });
+  // Config State - Initialized from props
+  const [emailConfig, setEmailConfig] = useState<SystemConfig>(config);
+
+  const pendingVendors = vendors.filter(v => !v.isApproved);
+  const approvedVendors = vendors.filter(v => v.isApproved);
+
+  // Sync local state if prop updates (e.g. on reload)
+  useEffect(() => {
+    setEmailConfig(config);
+  }, [config]);
 
   const toggleExpand = (id: string) => {
     const next = new Set(expandedCats);
@@ -101,6 +111,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           description: 'Service Provider',
           rating: 4.0,
           isVerified: true,
+          isApproved: true, // Admin added vendors are auto-approved
           contact: newVendor.contact || '',
           maskedContact: newVendor.contact || '',
           email: newVendor.email,
@@ -113,6 +124,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       onAddVendor(finalVendor);
       setShowAddVendor(false);
       setNewVendor({ name: '', contact: '', email: '', category: '', subCategory: '', location: { lat: 0, lng: 0, address: '' }, products: [] });
+  };
+
+  const handleSubmitBanner = () => {
+    if (newBanner.imageUrl && newBanner.altText) {
+      onAddBanner(newBanner.imageUrl, newBanner.link || '#', newBanner.altText);
+      setNewBanner({ imageUrl: '', link: '', altText: '' });
+      setShowAddBanner(false);
+    } else {
+      alert("Please provide an Image URL and Alt Text");
+    }
+  };
+
+  const handleSaveConfig = () => {
+    if (!emailConfig.smtpServer || !emailConfig.username) {
+      alert("Please fill at least the Server and Username fields.");
+      return;
+    }
+    onSaveConfig(emailConfig);
   };
 
   // Helpers for Dropdowns
@@ -140,7 +169,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     <div className="bg-white shadow-sm min-h-screen">
       <div className="border-b flex overflow-x-auto">
         <button onClick={() => setActiveTab('CATS')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'CATS' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>Categories</button>
-        <button onClick={() => setActiveTab('VENDORS')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'VENDORS' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>Services & Vendors</button>
+        <button onClick={() => setActiveTab('VENDORS')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'VENDORS' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>
+            Services & Vendors
+            {pendingVendors.length > 0 && <span className="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{pendingVendors.length}</span>}
+        </button>
         <button onClick={() => setActiveTab('BANNERS')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'BANNERS' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>Banners</button>
         <button onClick={() => setActiveTab('CONFIG')} className={`px-6 py-4 font-medium whitespace-nowrap ${activeTab === 'CONFIG' ? 'border-b-2 border-primary text-primary' : 'text-gray-600'}`}>Configuration</button>
       </div>
@@ -206,8 +238,36 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
         {activeTab === 'VENDORS' && (
           <div>
+            {/* PENDING APPROVALS SECTION */}
+            {pendingVendors.length > 0 && (
+                <div className="mb-8 border-b-2 border-orange-200 pb-8 bg-orange-50 p-4 rounded-lg">
+                    <h3 className="text-lg font-bold text-orange-800 mb-4 flex items-center gap-2">
+                        <AlertCircle className="w-5 h-5"/> Pending Approvals ({pendingVendors.length})
+                    </h3>
+                    <div className="grid gap-4">
+                        {pendingVendors.map(v => (
+                            <div key={v.id} className="bg-white p-4 rounded shadow-sm border border-orange-200 flex flex-col md:flex-row justify-between items-center">
+                                <div className="mb-2 md:mb-0">
+                                    <h4 className="font-bold">{v.name}</h4>
+                                    <p className="text-sm text-gray-600">{v.categoryIds.join(', ')} • {v.contact}</p>
+                                    <p className="text-xs text-gray-500">{v.location.address}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button onClick={() => onRemoveVendor(v.id)} className="flex items-center gap-1 bg-red-100 text-red-700 px-3 py-1.5 rounded text-sm hover:bg-red-200">
+                                        <XCircle className="w-4 h-4"/> Reject
+                                    </button>
+                                    <button onClick={() => onApproveVendor(v.id)} className="flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700 font-bold">
+                                        <CheckCircle className="w-4 h-4"/> Approve
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div className="flex justify-between items-center mb-4">
-               <h2 className="text-xl font-bold">Service Providers & Vendors</h2>
+               <h2 className="text-xl font-bold">Active Service Providers</h2>
                <button 
                  onClick={() => setShowAddVendor(!showAddVendor)} 
                  className="bg-primary text-white px-4 py-2 rounded shadow flex items-center gap-2 hover:bg-blue-600"
@@ -330,7 +390,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {vendors.map(v => (
+                  {approvedVendors.map(v => (
                     <tr key={v.id} className="hover:bg-gray-50">
                       <td className="p-3 font-medium">
                           {v.name}
@@ -351,6 +411,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       </td>
                     </tr>
                   ))}
+                  {approvedVendors.length === 0 && (
+                      <tr><td colSpan={6} className="p-4 text-center text-gray-500 italic">No active vendors found. Check pending tab.</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -361,10 +424,53 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           <div>
             <div className="flex justify-between mb-4">
               <h2 className="text-xl font-bold">Ad Banners</h2>
-              <button onClick={onAddBanner} className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded shadow hover:bg-blue-600">
-                <Plus className="w-4 h-4" /> Add New Banner
+              <button onClick={() => setShowAddBanner(!showAddBanner)} className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded shadow hover:bg-blue-600">
+                 {showAddBanner ? <Minus className="w-4 h-4"/> : <Plus className="w-4 h-4"/>}
+                 {showAddBanner ? 'Cancel' : 'Add New Banner'}
               </button>
             </div>
+
+            {showAddBanner && (
+                <div className="bg-gray-50 border rounded p-6 mb-6 animate-fade-in">
+                    <h3 className="font-bold text-lg mb-4 text-gray-700">Add New Banner</h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Image URL (Unsplash, etc.)</label>
+                            <div className="flex gap-2">
+                                <input 
+                                    className="w-full border p-2 rounded" 
+                                    placeholder="https://..."
+                                    value={newBanner.imageUrl} 
+                                    onChange={e => setNewBanner({...newBanner, imageUrl: e.target.value})} 
+                                />
+                                <button className="bg-gray-200 px-3 rounded"><Upload className="w-4 h-4"/></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Click Link (Optional)</label>
+                            <input 
+                                className="w-full border p-2 rounded" 
+                                placeholder="#"
+                                value={newBanner.link} 
+                                onChange={e => setNewBanner({...newBanner, link: e.target.value})} 
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Alt Text / Title</label>
+                            <input 
+                                className="w-full border p-2 rounded" 
+                                placeholder="Big Sale..."
+                                value={newBanner.altText} 
+                                onChange={e => setNewBanner({...newBanner, altText: e.target.value})} 
+                            />
+                        </div>
+                        <button onClick={handleSubmitBanner} className="bg-primary text-white px-6 py-2 rounded font-bold shadow hover:bg-blue-600">
+                            Add Banner
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {banners.map(b => (
                 <div key={b.id} className="border rounded-lg overflow-hidden relative group shadow-sm hover:shadow-md transition">
@@ -438,7 +544,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
                     <div>
                          <label className="block text-xs font-bold mb-1 text-gray-600">Password</label>
-                         <input type="password" value="**********" className="w-full border bg-white rounded px-3 py-2 text-sm outline-none" readOnly />
+                         <input 
+                           type="password" 
+                           className="w-full border bg-white rounded px-3 py-2 text-sm outline-none" 
+                           value={emailConfig.password}
+                           onChange={e => setEmailConfig({...emailConfig, password: e.target.value})}
+                           placeholder="Enter SMTP Password"
+                        />
                     </div>
 
                     <div>
@@ -446,7 +558,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                          <input type="email" className="w-full border bg-white rounded px-3 py-2 text-sm outline-none" value={emailConfig.alertEmail} onChange={e => setEmailConfig({...emailConfig, alertEmail: e.target.value})} />
                     </div>
 
-                    <button className="w-full bg-primary text-white py-2 rounded text-sm font-bold shadow hover:bg-blue-600 transition">Save Configuration</button>
+                    <button onClick={handleSaveConfig} className="w-full bg-primary text-white py-2 rounded text-sm font-bold shadow hover:bg-blue-600 transition">Save Configuration</button>
                  </div>
              </div>
           </div>

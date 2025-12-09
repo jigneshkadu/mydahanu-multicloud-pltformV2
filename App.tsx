@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  User, UserRole, Vendor, Category, Banner, Order 
+  User, UserRole, Vendor, Category, Banner, Order, SystemConfig 
 } from './types';
 import { 
   APP_CATEGORIES, INITIAL_BANNERS, MOCK_VENDORS, MOCK_ORDERS 
@@ -37,11 +37,27 @@ const App: React.FC = () => {
   const [banners, setBanners] = useState<Banner[]>(INITIAL_BANNERS);
   const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS); // For vendor dashboard
   
+  // System Configuration with Persistence
+  const [systemConfig, setSystemConfig] = useState<SystemConfig>(() => {
+      const saved = localStorage.getItem('system_config');
+      return saved ? JSON.parse(saved) : {
+        smtpServer: 'smtp.gmail.com',
+        port: '587',
+        username: 'admin@dahanu.com',
+        password: '',
+        alertEmail: 'alerts@dahanu.com',
+        enableAlerts: true
+      };
+  });
+  
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [locationText, setLocationText] = useState('Detecting...');
   
   const [aiSearchResults, setAiSearchResults] = useState<string>('');
   const [isSearching, setIsSearching] = useState(false);
+
+  // Computed: Only Approved Vendors for public view
+  const approvedVendors = vendors.filter(v => v.isApproved);
 
   // --- Effects ---
   useEffect(() => {
@@ -120,10 +136,10 @@ const App: React.FC = () => {
     setIsSearching(true);
     setView('HOME'); // Show results on home map
     
-    // 1. Local Search
+    // 1. Local Search (Only Approved)
     const lowerQ = query.toLowerCase();
     // Basic mock filter logic
-    const matched = vendors.filter(v => 
+    const matched = approvedVendors.filter(v => 
       v.name.toLowerCase().includes(lowerQ) || 
       v.description.toLowerCase().includes(lowerQ) ||
       v.categoryIds.some(c => c.includes(lowerQ))
@@ -189,14 +205,33 @@ const App: React.FC = () => {
   const addVendor = (v: Partial<Vendor>) => {
     setVendors([...vendors, v as Vendor]);
     // Only redirect to dashboard if not adding from Admin Panel (which lacks auth context here mostly)
-    // But since we use this for both, we can check View state or just not redirect if Admin.
     if (view !== 'ADMIN') {
-        setView('VENDOR_DASHBOARD');
+        setView('HOME'); // Go home after registration, waiting for approval
     }
   };
   
   const removeVendor = (id: string) => {
     setVendors(vendors.filter(v => v.id !== id));
+  };
+
+  const approveVendor = (id: string) => {
+    setVendors(vendors.map(v => v.id === id ? { ...v, isApproved: true } : v));
+  };
+
+  const addBanner = (imageUrl: string, link: string, altText: string) => {
+      const newBanner: Banner = {
+          id: Math.random().toString(36).substr(2, 9),
+          imageUrl,
+          link,
+          altText
+      };
+      setBanners([...banners, newBanner]);
+  };
+
+  const saveSystemConfig = (newConfig: SystemConfig) => {
+    setSystemConfig(newConfig);
+    localStorage.setItem('system_config', JSON.stringify(newConfig));
+    alert('System Configuration Saved Successfully (Persisted)!');
   };
 
   // --- Vendor Dashboard Functions ---
@@ -236,7 +271,7 @@ const App: React.FC = () => {
           </h2>
           <div className="h-[400px]">
             <MapVisualizer 
-                vendors={vendors} 
+                vendors={approvedVendors} 
                 userLocation={userLocation}
                 aiResults={aiSearchResults}
             />
@@ -247,12 +282,12 @@ const App: React.FC = () => {
   );
 
   const renderVendorList = () => {
-    // Filter Logic
-    let filtered = vendors;
+    // Filter Logic: Using Approved Vendors only
+    let filtered = approvedVendors;
     if (activeSubCategoryId) {
-      filtered = vendors.filter(v => v.categoryIds.includes(activeSubCategoryId));
+      filtered = approvedVendors.filter(v => v.categoryIds.includes(activeSubCategoryId));
     } else if (activeCategory) {
-       filtered = vendors; 
+       filtered = approvedVendors; 
     }
 
     return (
@@ -270,7 +305,7 @@ const App: React.FC = () => {
                         <Plus className="w-3 h-3" /> List your Business
                    </button>
                </div>
-               <button onClick={() => setView('HOME')} className="text-sm text-blue-600 font-bold hover:underline">Clear Filters</button>
+               <button onClick={() => setView('HOME')} className="text-sm text-primary font-bold hover:underline">Clear Filters</button>
             </div>
 
             <div className="space-y-4 pb-24">
@@ -290,13 +325,13 @@ const App: React.FC = () => {
                 </div>
               ) : (
                 filtered.map((v, index) => (
-                  <div key={v.id} className="bg-white p-4 rounded shadow-sm hover:shadow-md transition flex flex-col md:flex-row gap-4 group border-l-4 border-l-transparent hover:border-l-[#2874f0]">
+                  <div key={v.id} className="bg-white p-4 rounded shadow-sm hover:shadow-md transition flex flex-col md:flex-row gap-4 group border-l-4 border-l-transparent hover:border-l-primary">
                     <div className="w-full md:w-48 h-32 bg-gray-100 rounded overflow-hidden relative shrink-0">
                        <img src={v.imageUrl} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                        {v.isVerified && <div className="absolute top-1 left-1 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1"><CheckCircle className="w-3 h-3"/> VERIFIED</div>}
                        
                        {/* Location Marker Badge */}
-                       <div className="absolute bottom-1 right-1 bg-[#2874f0] text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-md">
+                       <div className="absolute bottom-1 right-1 bg-white text-gray-800 w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-md">
                           {String.fromCharCode(65 + index)}
                        </div>
                     </div>
@@ -371,7 +406,7 @@ const App: React.FC = () => {
             category={activeCategory} 
             onBack={() => setView('HOME')}
             onSelectSubCategory={handleSubCategorySelect}
-            vendors={vendors}
+            vendors={approvedVendors}
             onRegisterClick={() => { setAuthInitialMode('VENDOR'); setAuthOpen(true); }}
             userLocation={userLocation}
           />
@@ -382,16 +417,19 @@ const App: React.FC = () => {
         {view === 'ADMIN' && (
           <AdminPanel 
             categories={categories}
-            vendors={vendors}
+            vendors={vendors} // Pass ALL vendors to admin for approval
             banners={banners}
+            config={systemConfig}
             onAddCategory={addCategory}
             onRemoveCategory={removeCategory}
             onAddSubCategory={addSubCategory}
             onRemoveSubCategory={removeSubCategory}
             onRemoveVendor={removeVendor}
             onAddVendor={addVendor}
-            onAddBanner={() => {}}
+            onApproveVendor={approveVendor}
+            onAddBanner={addBanner}
             onRemoveBanner={(id) => setBanners(banners.filter(b => b.id !== id))}
+            onSaveConfig={saveSystemConfig}
           />
         )}
         

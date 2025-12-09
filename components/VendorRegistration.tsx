@@ -40,8 +40,6 @@ const VendorRegistration: React.FC<VendorRegistrationProps> = ({ categories, onS
               c.subCategories.forEach(sub => {
                   const displayName = prefix ? `${prefix} › ${sub.name}` : sub.name;
                   // The path for this subcategory includes the parent's path + current parent id + this sub id
-                  // We already have 'selectedCategory' (root) handled separately, but let's be robust.
-                  // Actually simpler: The path accumulating from the root.
                   const currentPath = [...parentPath, sub.id];
                   
                   list.push({ 
@@ -90,17 +88,14 @@ const VendorRegistration: React.FC<VendorRegistrationProps> = ({ categories, onS
     let catIds: string[] = [];
     
     if (selectedCategory) {
-        // If a subcategory is selected, use its full path (which includes the root and intermediates)
         if (selectedSubCategory) {
             const selectedSub = subCategoriesList.find(s => s.id === selectedSubCategory);
             if (selectedSub) {
                 catIds = selectedSub.pathIds;
             } else {
-                // Fallback (shouldn't happen)
                 catIds = [selectedCategory, selectedSubCategory];
             }
         } else {
-            // Only root selected
             catIds = [selectedCategory];
         }
     }
@@ -115,10 +110,13 @@ const VendorRegistration: React.FC<VendorRegistrationProps> = ({ categories, onS
       maskedContact: formData.contact, // Use real contact for now
       rating: 4.5, // Default rating for new vendors
       isVerified: false,
+      isApproved: false, // Default to false for self-registration
       imageUrl: 'https://picsum.photos/300/200', // Placeholder
       priceStart: 0,
       location: { lat, lng, address: formData.address }
     });
+    
+    alert("Registration submitted! Your business will be listed after Admin approval.");
   };
 
   return (
