@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Category, Vendor } from '../types';
 
 interface VendorRegistrationProps {
@@ -10,18 +10,45 @@ interface VendorRegistrationProps {
 const VendorRegistration: React.FC<VendorRegistrationProps> = ({ categories, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
     name: '',
-    categoryIds: [] as string[],
     contact: '',
     address: '',
     description: ''
   });
+  
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('');
+
+  // Helper to flatten subcategories for the dropdown
+  const subCategoriesList = useMemo(() => {
+    const parent = categories.find(c => c.id === selectedCategory);
+    if (!parent) return [];
+
+    const flatten = (c: Category, prefix: string = ''): {id: string, name: string}[] => {
+          let list: {id: string, name: string}[] = [];
+          if (c.subCategories) {
+              c.subCategories.forEach(sub => {
+                  const displayName = prefix ? `${prefix} › ${sub.name}` : sub.name;
+                  list.push({ id: sub.id, name: displayName });
+                  list = [...list, ...flatten(sub, displayName)];
+              });
+          }
+          return list;
+      }
+      return flatten(parent);
+  }, [selectedCategory, categories]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const catIds = [];
+    if (selectedCategory) catIds.push(selectedCategory);
+    if (selectedSubCategory) catIds.push(selectedSubCategory);
+
     onSubmit({
       ...formData,
+      categoryIds: catIds,
       id: Math.random().toString(36).substr(2, 9),
-      maskedContact: '+1 (XXX) XXX-XXXX',
+      maskedContact: formData.contact, // Use real contact for now
       rating: 0,
       isVerified: false,
       imageUrl: 'https://picsum.photos/300/200',
@@ -44,17 +71,40 @@ const VendorRegistration: React.FC<VendorRegistrationProps> = ({ categories, onS
           />
         </div>
 
-        <div>
-           <label className="block text-sm font-medium text-gray-700">Primary Category</label>
-           <select 
-             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-primary focus:border-primary"
-             onChange={e => setFormData({...formData, categoryIds: [e.target.value]})}
-           >
-             <option value="">Select a category</option>
-             {categories.map(c => (
-               <option key={c.id} value={c.id}>{c.name}</option>
-             ))}
-           </select>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+            <label className="block text-sm font-medium text-gray-700">Primary Category</label>
+            <select 
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-primary focus:border-primary"
+                value={selectedCategory}
+                onChange={e => {
+                    setSelectedCategory(e.target.value);
+                    setSelectedSubCategory('');
+                }}
+            >
+                <option value="">Select Category</option>
+                {categories.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+            </select>
+            </div>
+
+            <div>
+            <label className="block text-sm font-medium text-gray-700">Sub-Category</label>
+            <select 
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-primary focus:border-primary disabled:bg-gray-100 disabled:text-gray-400"
+                value={selectedSubCategory}
+                onChange={e => setSelectedSubCategory(e.target.value)}
+                disabled={!selectedCategory || subCategoriesList.length === 0}
+                required={subCategoriesList.length > 0}
+            >
+                <option value="">Select Sub-Category</option>
+                {subCategoriesList.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+            </select>
+            </div>
         </div>
 
         <div>
