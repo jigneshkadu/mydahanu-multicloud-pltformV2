@@ -75,7 +75,7 @@ const MapVisualizer: React.FC<MapVisualizerProps> = ({ vendors, userLocation, ai
       {/* Background Grid */}
       <div className="absolute inset-0 opacity-10" 
            style={{
-             backgroundImage: 'linear-gradient(#8bbe1b 1px, transparent 1px), linear-gradient(90deg, #8bbe1b 1px, transparent 1px)',
+             backgroundImage: 'linear-gradient(#9C81A4 1px, transparent 1px), linear-gradient(90deg, #9C81A4 1px, transparent 1px)',
              backgroundSize: '40px 40px'
            }}>
       </div>
@@ -96,7 +96,7 @@ const MapVisualizer: React.FC<MapVisualizerProps> = ({ vendors, userLocation, ai
             ) : (
                 <>
                     <div className="relative">
-                        <MapPin className="w-10 h-10 text-primary drop-shadow-md group-hover:-translate-y-1 transition-transform" fill="#8bbe1b" />
+                        <MapPin className="w-10 h-10 text-primary drop-shadow-md group-hover:-translate-y-1 transition-transform" fill="#9C81A4" />
                         <span className="absolute top-2 left-1/2 -translate-x-1/2 text-gray-800 text-xs font-bold">{m.label}</span>
                     </div>
                     <div className="bg-white p-2 rounded shadow-lg text-xs w-32 text-center opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full mb-1 z-30 pointer-events-none">

@@ -54,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({
           <input
             type="text"
             placeholder="Search for services, products, and more (AI Enabled)"
-            className="w-full py-2.5 pl-10 pr-4 rounded-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-lime-200 shadow-sm"
+            className="w-full py-2.5 pl-10 pr-4 rounded-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#9C81A4]/40 shadow-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

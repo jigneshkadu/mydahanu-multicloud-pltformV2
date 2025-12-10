@@ -55,7 +55,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ categories, onCategoryClick }) =>
              <button 
                 key={cat.id} 
                 onClick={() => onCategoryClick(cat)}
-                className="flex flex-col items-center justify-center min-w-[90px] h-[85px] rounded-lg bg-primary hover:bg-[#7aa818] transition-all shadow-sm hover:shadow-md group active:scale-95"
+                className="flex flex-col items-center justify-center min-w-[90px] h-[85px] rounded-lg bg-primary hover:bg-[#7E6885] transition-all shadow-sm hover:shadow-md group active:scale-95"
              >
                 <div className="text-white transition-colors">
                    {getIcon(cat.icon)}

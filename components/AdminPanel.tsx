@@ -235,7 +235,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                                 value={newSubCatName[c.id] || ''}
                                 onChange={e => setNewSubCatName({...newSubCatName, [c.id]: e.target.value})}
                             />
-                            <button onClick={() => handleAddSubCategory(c.id)} className="bg-lime-100 text-lime-700 px-3 py-1 rounded text-xs font-bold hover:bg-lime-200">Add</button>
+                            <button onClick={() => handleAddSubCategory(c.id)} className="bg-[#9C81A4]/10 text-[#7E6885] px-3 py-1 rounded text-xs font-bold hover:bg-[#9C81A4]/20">Add</button>
                         </div>
                      </div>
                    )}
@@ -296,7 +296,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                <h2 className="text-xl font-bold">Active Service Providers</h2>
                <button 
                  onClick={() => setShowAddVendor(!showAddVendor)} 
-                 className="bg-primary text-white px-4 py-2 rounded shadow flex items-center gap-2 hover:bg-[#7aa818]"
+                 className="bg-primary text-white px-4 py-2 rounded shadow flex items-center gap-2 hover:bg-[#7E6885]"
                >
                   {showAddVendor ? <Minus className="w-4 h-4"/> : <Plus className="w-4 h-4"/>} 
                   {showAddVendor ? 'Cancel' : 'Add Service'}
@@ -397,7 +397,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                              </div>
                         </div>
                     </div>
-                    <button onClick={handleSubmitVendor} className="w-full bg-primary text-white py-3 rounded font-bold shadow hover:bg-[#7aa818] flex items-center justify-center gap-2">
+                    <button onClick={handleSubmitVendor} className="w-full bg-primary text-white py-3 rounded font-bold shadow hover:bg-[#7E6885] flex items-center justify-center gap-2">
                         <Save className="w-5 h-5" /> Save Service
                     </button>
                 </div>
@@ -450,7 +450,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           <div>
             <div className="flex justify-between mb-4">
               <h2 className="text-xl font-bold">Ad Banners</h2>
-              <button onClick={() => setShowAddBanner(!showAddBanner)} className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded shadow hover:bg-[#7aa818]">
+              <button onClick={() => setShowAddBanner(!showAddBanner)} className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded shadow hover:bg-[#7E6885]">
                  {showAddBanner ? <Minus className="w-4 h-4"/> : <Plus className="w-4 h-4"/>}
                  {showAddBanner ? 'Cancel' : 'Add New Banner'}
               </button>
@@ -490,7 +490,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                                 onChange={e => setNewBanner({...newBanner, altText: e.target.value})} 
                             />
                         </div>
-                        <button onClick={handleSubmitBanner} className="bg-primary text-white px-6 py-2 rounded font-bold shadow hover:bg-[#7aa818]">
+                        <button onClick={handleSubmitBanner} className="bg-primary text-white px-6 py-2 rounded font-bold shadow hover:bg-[#7E6885]">
                             Add Banner
                         </button>
                     </div>
@@ -528,7 +528,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" checked={emailConfig.enableAlerts} onChange={e => setEmailConfig({...emailConfig, enableAlerts: e.target.checked})} className="sr-only peer" />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-lime-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#9C81A4]/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                         </label>
                     </div>
                     <div className="flex items-center justify-between border-b pb-4">
@@ -538,7 +538,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" className="sr-only peer" />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-lime-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#9C81A4]/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
                         </label>
                     </div>
                 </div>
@@ -584,7 +584,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                          <input type="email" className="w-full border bg-white rounded px-3 py-2 text-sm outline-none" value={emailConfig.alertEmail} onChange={e => setEmailConfig({...emailConfig, alertEmail: e.target.value})} />
                     </div>
 
-                    <button onClick={handleSaveConfig} className="w-full bg-primary text-white py-2 rounded text-sm font-bold shadow hover:bg-[#7aa818] transition">Save Configuration</button>
+                    <button onClick={handleSaveConfig} className="w-full bg-primary text-white py-2 rounded text-sm font-bold shadow hover:bg-[#7E6885] transition">Save Configuration</button>
                  </div>
              </div>
           </div>

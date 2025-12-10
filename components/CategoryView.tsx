@@ -88,7 +88,7 @@ const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectS
             </div>
             
             <div className="pt-4 border-t border-gray-100 flex items-center justify-between mt-auto">
-               <span className="bg-lime-50 text-primary px-3 py-1 rounded-full text-xs font-bold">
+               <span className="bg-[#9C81A4]/10 text-primary px-3 py-1 rounded-full text-xs font-bold">
                  {getVendorCount(subCat)} Vendors
                </span>
                
@@ -103,7 +103,7 @@ const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectS
         ))}
 
         {/* Add Service / Register CTA Card */}
-        <div className="bg-lime-50 rounded-xl p-6 border-2 border-dashed border-lime-200 flex flex-col items-center justify-center text-center h-full min-h-[200px]">
+        <div className="bg-[#9C81A4]/10 rounded-xl p-6 border-2 border-dashed border-[#9C81A4]/30 flex flex-col items-center justify-center text-center h-full min-h-[200px]">
            <div className="bg-white p-3 rounded-full mb-4 shadow-sm">
              <PlusCircle className="w-8 h-8 text-primary" />
            </div>

@@ -22,7 +22,7 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ vendor, orders, onUpd
           <p className="text-gray-600">Welcome back, <span className="font-semibold text-primary">{vendor.name}</span></p>
         </div>
         <div className="flex gap-4 mt-4 md:mt-0 text-center">
-           <div className="bg-lime-50 p-3 rounded-lg">
+           <div className="bg-[#9C81A4]/10 p-3 rounded-lg">
               <div className="text-2xl font-bold text-primary">{pendingOrders.length}</div>
               <div className="text-xs text-gray-500 uppercase font-semibold">New Requests</div>
            </div>
@@ -76,7 +76,7 @@ const VendorDashboard: React.FC<VendorDashboardProps> = ({ vendor, orders, onUpd
                  </button>
                  <button 
                    onClick={() => onUpdateStatus(order.id, 'ACCEPTED')}
-                   className="px-4 py-2 bg-primary text-white rounded hover:bg-[#7aa818] text-sm font-bold shadow"
+                   className="px-4 py-2 bg-primary text-white rounded hover:bg-[#7E6885] text-sm font-bold shadow"
                  >
                    Accept Request
                  </button>

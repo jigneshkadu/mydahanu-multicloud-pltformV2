@@ -353,13 +353,13 @@ const App: React.FC = () => {
                        <div className="w-full space-y-2">
                             <button 
                                 onClick={() => handleContactClick(v)}
-                                className="bg-primary text-white px-6 py-2.5 rounded-sm font-bold shadow hover:bg-[#7aa818] w-full flex items-center justify-center gap-2 transition-colors"
+                                className="bg-primary text-white px-6 py-2.5 rounded-sm font-bold shadow hover:bg-[#7E6885] w-full flex items-center justify-center gap-2 transition-colors"
                             >
                                 <PhoneCall className="w-4 h-4" /> Contact
                             </button>
                             <button 
                                 onClick={() => handleDirectionClick(v)}
-                                className="bg-white border border-primary text-primary px-6 py-2.5 rounded-sm font-bold shadow-sm hover:bg-lime-50 w-full flex items-center justify-center gap-2 transition-colors"
+                                className="bg-white border border-primary text-primary px-6 py-2.5 rounded-sm font-bold shadow-sm hover:bg-[#9C81A4]/10 w-full flex items-center justify-center gap-2 transition-colors"
                             >
                                 <Navigation className="w-4 h-4" /> Direction
                             </button>
