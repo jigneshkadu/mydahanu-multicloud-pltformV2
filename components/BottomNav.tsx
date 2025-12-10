@@ -23,9 +23,9 @@ const BottomNav: React.FC<BottomNavProps> = ({ categories, onCategoryClick }) =>
     }
   };
 
-  // Icon Helper (Same as used in App/CategoryView)
-  const getIcon = (iconName: string | undefined) => {
-    const props = { className: "w-6 h-6 mb-1" };
+  // Icon Helper (Dynamic Color)
+  const getIcon = (iconName: string | undefined, color: string) => {
+    const props = { className: "w-6 h-6 mb-1", style: { color } };
     switch(iconName) {
       case 'PartyPopper': return <PartyPopper {...props} />;
       case 'Stethoscope': return <Stethoscope {...props} />;
@@ -40,7 +40,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ categories, onCategoryClick }) =>
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)] z-50 h-28 flex items-center border-t border-gray-200 pb-safe">
+    <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur shadow-[0_-2px_15px_rgba(0,0,0,0.05)] z-50 h-28 flex items-center border-t border-gray-200 pb-safe">
        {/* Scroll Button Left */}
        <button onClick={() => scroll('left')} className="p-2 h-full bg-white hover:bg-gray-50 z-10 hidden md:flex items-center justify-center border-r border-gray-200">
          <ChevronLeft className="w-6 h-6 text-gray-600" />
@@ -55,12 +55,18 @@ const BottomNav: React.FC<BottomNavProps> = ({ categories, onCategoryClick }) =>
              <button 
                 key={cat.id} 
                 onClick={() => onCategoryClick(cat)}
-                className="flex flex-col items-center justify-center min-w-[90px] h-[85px] rounded-lg bg-primary hover:bg-[#7E6885] transition-all shadow-sm hover:shadow-md group active:scale-95"
+                className="flex flex-col items-center justify-center min-w-[90px] h-[85px] rounded-xl bg-white border border-transparent hover:border-gray-200 transition-all active:scale-95 group"
              >
-                <div className="text-white transition-colors">
-                   {getIcon(cat.icon)}
+                <div 
+                  className="transition-transform group-hover:-translate-y-1 duration-200 p-2.5 rounded-full mb-1" 
+                  style={{ backgroundColor: `${cat.themeColor || '#666'}15` }}
+                >
+                   {getIcon(cat.icon, cat.themeColor || '#666')}
                 </div>
-                <span className="text-[11px] font-bold text-center leading-tight px-1 truncate w-full text-white">{cat.name}</span>
+                {/* Ensure text is dark and legible */}
+                <span className="text-[11px] font-bold text-center leading-tight px-1 truncate w-full text-gray-900 group-hover:text-black">
+                    {cat.name}
+                </span>
              </button>
           ))}
        </div>

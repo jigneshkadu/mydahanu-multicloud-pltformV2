@@ -12,6 +12,7 @@ export interface Category {
   subCategories?: Category[];
   icon?: string; // name of the Lucide icon
   description?: string;
+  themeColor?: string; // New property for dynamic theming
 }
 
 export interface Product {

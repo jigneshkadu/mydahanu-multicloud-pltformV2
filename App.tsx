@@ -80,6 +80,18 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // --- Theme Management ---
+  const updateThemeColor = (color: string) => {
+    document.documentElement.style.setProperty('--primary-color', color);
+    // Set shadow color with opacity (adding 40 to hex for approx 25% opacity)
+    document.documentElement.style.setProperty('--primary-shadow', color + '40');
+  };
+
+  const resetTheme = () => {
+    document.documentElement.style.setProperty('--primary-color', '#9C81A4');
+    document.documentElement.style.setProperty('--primary-shadow', 'rgba(156, 129, 164, 0.25)');
+  };
+
   // --- Handlers ---
 
   const handleLoginSuccess = (email: string, role: 'USER' | 'VENDOR' | 'ADMIN', isNewUser: boolean) => {
@@ -99,16 +111,19 @@ const App: React.FC = () => {
     // Redirection Logic
     if (userRole === UserRole.ADMIN) {
         setView('ADMIN');
+        resetTheme();
     } else if (userRole === UserRole.VENDOR) {
         if (isNewUser) {
             setView('REGISTER');
         } else {
             setView('VENDOR_DASHBOARD');
         }
+        resetTheme();
     } else {
         // Normal User stays on current page (usually Home)
         if (view === 'REGISTER' || view === 'ADMIN' || view === 'VENDOR_DASHBOARD') {
              setView('HOME');
+             resetTheme();
         }
     }
   };
@@ -116,12 +131,21 @@ const App: React.FC = () => {
   const handleLogout = () => {
     setUser(null);
     setView('HOME');
+    resetTheme();
   };
 
   const handleCategoryClick = (category: Category) => {
     setActiveCategory(category);
+    if (category.themeColor) {
+      updateThemeColor(category.themeColor);
+    }
     setView('CATEGORY');
     window.scrollTo(0, 0);
+  };
+
+  const handleHomeClick = () => {
+    setView('HOME');
+    resetTheme();
   };
 
   const handleSubCategorySelect = (subCatId: string) => {
@@ -135,6 +159,7 @@ const App: React.FC = () => {
     
     setIsSearching(true);
     setView('HOME'); // Show results on home map
+    resetTheme();
     
     // 1. Local Search (Only Approved)
     const lowerQ = query.toLowerCase();
@@ -207,6 +232,7 @@ const App: React.FC = () => {
     // Only redirect to dashboard if not adding from Admin Panel (which lacks auth context here mostly)
     if (view !== 'ADMIN') {
         setView('HOME'); // Go home after registration, waiting for approval
+        resetTheme();
     }
   };
   
@@ -295,7 +321,7 @@ const App: React.FC = () => {
          
          {/* Main List */}
          <div className="flex-1 h-full overflow-y-auto pr-2">
-            <div className="bg-white p-4 mb-4 shadow-sm rounded flex justify-between items-center sticky top-0 z-10 border-b">
+            <div className="bg-white p-4 mb-4 shadow-theme rounded flex justify-between items-center sticky top-0 z-10 border-b">
                <div className="flex items-center gap-4">
                    <span className="font-medium text-gray-700">Showing {filtered.length} results nearby</span>
                    <button 
@@ -305,12 +331,12 @@ const App: React.FC = () => {
                         <Plus className="w-3 h-3" /> List your Business
                    </button>
                </div>
-               <button onClick={() => setView('HOME')} className="text-sm text-primary font-bold hover:underline">Clear Filters</button>
+               <button onClick={handleHomeClick} className="text-sm text-primary font-bold hover:underline">Clear Filters</button>
             </div>
 
             <div className="space-y-4 pb-24">
               {filtered.length === 0 ? (
-                <div className="bg-white p-12 text-center rounded shadow-sm">
+                <div className="bg-white p-12 text-center rounded shadow-theme">
                    <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4"/>
                    <h3 className="text-lg font-bold text-gray-600">No Vendors Found</h3>
                    <p className="text-gray-500 mb-6">Try searching for something else.</p>
@@ -321,11 +347,11 @@ const App: React.FC = () => {
                    >
                      Be the first to join here!
                    </button>
-                   <button onClick={() => setView('HOME')} className="block mt-4 text-primary text-sm font-bold hover:underline mx-auto">Go Home</button>
+                   <button onClick={handleHomeClick} className="block mt-4 text-primary text-sm font-bold hover:underline mx-auto">Go Home</button>
                 </div>
               ) : (
                 filtered.map((v, index) => (
-                  <div key={v.id} className="bg-white p-4 rounded shadow-sm hover:shadow-md transition flex flex-col md:flex-row gap-4 group border-l-4 border-l-transparent hover:border-l-primary">
+                  <div key={v.id} className="bg-white p-4 rounded shadow-theme hover:shadow-lg transition flex flex-col md:flex-row gap-4 group border-l-4 border-l-transparent hover:border-l-primary">
                     <div className="w-full md:w-48 h-32 bg-gray-100 rounded overflow-hidden relative shrink-0">
                        <img src={v.imageUrl} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                        {v.isVerified && <div className="absolute top-1 left-1 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1"><CheckCircle className="w-3 h-3"/> VERIFIED</div>}
@@ -353,13 +379,13 @@ const App: React.FC = () => {
                        <div className="w-full space-y-2">
                             <button 
                                 onClick={() => handleContactClick(v)}
-                                className="bg-primary text-white px-6 py-2.5 rounded-sm font-bold shadow hover:bg-[#7E6885] w-full flex items-center justify-center gap-2 transition-colors"
+                                className="bg-primary text-white px-6 py-2.5 rounded-sm font-bold shadow hover:bg-white/20 w-full flex items-center justify-center gap-2 transition-colors"
                             >
                                 <PhoneCall className="w-4 h-4" /> Contact
                             </button>
                             <button 
                                 onClick={() => handleDirectionClick(v)}
-                                className="bg-white border border-primary text-primary px-6 py-2.5 rounded-sm font-bold shadow-sm hover:bg-[#9C81A4]/10 w-full flex items-center justify-center gap-2 transition-colors"
+                                className="bg-white border border-primary text-primary px-6 py-2.5 rounded-sm font-bold shadow-sm hover:bg-gray-50 w-full flex items-center justify-center gap-2 transition-colors"
                             >
                                 <Navigation className="w-4 h-4" /> Direction
                             </button>
@@ -372,7 +398,7 @@ const App: React.FC = () => {
          </div>
 
          {/* Map Side Panel */}
-         <aside className="hidden lg:block w-1/3 bg-white shadow-sm rounded h-full overflow-hidden sticky top-24 border">
+         <aside className="hidden lg:block w-1/3 bg-white shadow-theme rounded h-full overflow-hidden sticky top-24 border">
              <MapVisualizer 
                 vendors={filtered} 
                 userLocation={userLocation} 
@@ -394,7 +420,7 @@ const App: React.FC = () => {
         onVendorDashboardClick={() => setView('VENDOR_DASHBOARD')}
         locationText={locationText}
         onSearch={handleSearch}
-        onLogoClick={() => setView('HOME')}
+        onLogoClick={handleHomeClick}
         onAdminLogin={() => { setAuthInitialMode('ADMIN'); setAuthOpen(true); }}
       />
 
@@ -404,7 +430,7 @@ const App: React.FC = () => {
         {view === 'CATEGORY' && activeCategory && (
           <CategoryView 
             category={activeCategory} 
-            onBack={() => setView('HOME')}
+            onBack={handleHomeClick}
             onSelectSubCategory={handleSubCategorySelect}
             vendors={approvedVendors}
             onRegisterClick={() => { setAuthInitialMode('VENDOR'); setAuthOpen(true); }}
@@ -445,7 +471,7 @@ const App: React.FC = () => {
            <VendorRegistration 
               categories={categories}
               onSubmit={addVendor}
-              onCancel={() => setView('HOME')}
+              onCancel={handleHomeClick}
            />
         )}
       </main>

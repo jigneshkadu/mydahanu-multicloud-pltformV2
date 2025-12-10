@@ -7,6 +7,7 @@ export const APP_CATEGORIES: Category[] = [
     name: 'Events Services',
     icon: 'PartyPopper',
     description: 'Everything you need for your special occasions.',
+    themeColor: '#9C27B0', // Purple (Rainbow: Violet)
     subCategories: [
       { 
         id: 'event_planning', 
@@ -40,6 +41,7 @@ export const APP_CATEGORIES: Category[] = [
     name: 'Medical & Health',
     icon: 'Stethoscope',
     description: 'Healthcare services, clinics, and emergency support.',
+    themeColor: '#2196F3', // Blue (Rainbow: Blue)
     subCategories: [
       { 
         id: 'hospitals', 
@@ -73,6 +75,7 @@ export const APP_CATEGORIES: Category[] = [
     name: 'Transport',
     icon: 'Truck',
     description: 'Logistics, travel agencies, and vehicle rentals.',
+    themeColor: '#FF9800', // Orange (Rainbow: Orange)
     subCategories: [
       { 
         id: 'passenger', 
@@ -112,6 +115,7 @@ export const APP_CATEGORIES: Category[] = [
     name: 'Beauty & Wellness',
     icon: 'Sparkles',
     description: 'Salons, spas, and fitness centers.',
+    themeColor: '#E91E63', // Pink (Requested)
     subCategories: [
       { 
         id: 'fitness', 
@@ -139,6 +143,7 @@ export const APP_CATEGORIES: Category[] = [
     name: 'Home & Maintenance',
     icon: 'Hammer',
     description: 'Repairs, renovations, and handyman services.',
+    themeColor: '#4CAF50', // Green (Rainbow: Green)
     subCategories: [
       { 
         id: 'handyman', 
@@ -176,6 +181,7 @@ export const APP_CATEGORIES: Category[] = [
     name: 'Housekeeping',
     icon: 'SprayCan',
     description: 'Maids, cooks, and daily utility supplies.',
+    themeColor: '#009688', // Teal
     subCategories: [
       { 
         id: 'domestic', 
@@ -203,6 +209,7 @@ export const APP_CATEGORIES: Category[] = [
     name: 'Food & Beverages',
     icon: 'Utensils',
     description: 'Restaurants, cafes, and street food.',
+    themeColor: '#F44336', // Red (Rainbow: Red)
     subCategories: [
       { id: 'restaurant', name: 'Restaurants', description: 'Dine-in and delivery options.' },
       { id: 'beverage', name: 'Beverages', description: 'Cafes, tea stalls, and juice bars.' }
@@ -213,6 +220,7 @@ export const APP_CATEGORIES: Category[] = [
     name: 'Accommodation',
     icon: 'Hotel',
     description: 'Hotels, lodges, and guest houses.',
+    themeColor: '#FFC107', // Amber (Rainbow: Yellow)
     subCategories: [
       { id: 'hotel', name: 'Hotels', description: 'Comfortable stays and lodgings.' },
       { id: 'agro', name: 'Agro Tourism', description: 'Experience farm life and nature.' }
