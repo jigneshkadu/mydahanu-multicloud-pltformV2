@@ -80,4 +80,5 @@ export interface SystemConfig {
   password?: string;
   alertEmail: string;
   enableAlerts: boolean;
+  pinnedVendorId?: string; // ID of the vendor pinned by admin
 }

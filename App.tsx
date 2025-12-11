@@ -17,6 +17,7 @@ import MapVisualizer from './components/MapVisualizer';
 import CategoryView from './components/CategoryView';
 import BottomNav from './components/BottomNav';
 import SideMenu from './components/SideMenu';
+import FeaturedService from './components/FeaturedService';
 import { PhoneCall, Star, CheckCircle, MapPin, ShoppingBag, Plus, Navigation, PartyPopper, Stethoscope, Truck, Sparkles, Hammer, SprayCan, Utensils, Hotel, Calendar } from 'lucide-react';
 import { searchNearbyServices } from './services/geminiService';
 
@@ -48,7 +49,8 @@ const App: React.FC = () => {
         username: 'admin@dahanu.com',
         password: '',
         alertEmail: 'alerts@dahanu.com',
-        enableAlerts: true
+        enableAlerts: true,
+        pinnedVendorId: undefined // Initial state
       };
   });
   
@@ -270,6 +272,11 @@ const App: React.FC = () => {
     localStorage.setItem('system_config', JSON.stringify(newConfig));
     alert('System Configuration Saved Successfully (Persisted)!');
   };
+  
+  const handlePinVendor = (vendorId: string | undefined) => {
+      const updatedConfig = { ...systemConfig, pinnedVendorId: vendorId };
+      saveSystemConfig(updatedConfig);
+  };
 
   // --- Vendor Dashboard Functions ---
   const handleOrderStatusUpdate = (orderId: string, status: Order['status']) => {
@@ -298,8 +305,16 @@ const App: React.FC = () => {
     <>
       <BannerCarousel banners={banners} />
       
+      <div className="container mx-auto px-4 mt-6">
+          <FeaturedService 
+             vendors={approvedVendors} 
+             pinnedVendorId={systemConfig.pinnedVendorId}
+             onContactClick={handleContactClick}
+          />
+      </div>
+      
       {/* Mobile Category Grid (Visible only on small screens) */}
-      <section className="md:hidden px-4 py-6 -mt-4 relative z-10">
+      <section className="md:hidden px-4 py-2 relative z-10">
          <div className="bg-white rounded-xl shadow-lg p-5">
             <h2 className="text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider text-center">Services in Dahanu</h2>
             <div className="grid grid-cols-4 gap-4">
@@ -546,6 +561,7 @@ const App: React.FC = () => {
               onAddBanner={addBanner}
               onRemoveBanner={(id) => setBanners(banners.filter(b => b.id !== id))}
               onSaveConfig={saveSystemConfig}
+              onPinVendor={handlePinVendor}
             />
           </div>
         )}

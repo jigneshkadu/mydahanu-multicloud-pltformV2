@@ -123,53 +123,54 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
   );
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in font-sans">
-      <div className="bg-white rounded w-full max-w-3xl flex overflow-hidden relative shadow-2xl h-[528px]">
-        {/* Close Button updated to be visible on white background */}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm md:p-4 animate-fade-in font-sans">
+      <div className="bg-white w-full h-full md:h-[528px] md:max-w-3xl md:rounded-lg flex flex-col md:flex-row overflow-hidden relative shadow-2xl">
+        {/* Close Button: Adapted color based on background (White on mobile/blue bg, Gray on desktop/white bg) */}
         <button 
             onClick={onClose} 
-            className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 z-50 p-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="absolute top-4 right-4 z-50 p-1 rounded-full transition-colors text-white/90 hover:text-white hover:bg-white/10 md:text-gray-400 md:hover:text-gray-800 md:hover:bg-gray-100"
         >
           <X className="w-6 h-6" />
         </button>
 
         {/* --- LEFT PANEL (Primary Blue) --- */}
-        <div className="w-2/5 bg-primary p-10 flex flex-col justify-between text-white relative overflow-hidden">
+        {/* Mobile: Top header (35% height), Desktop: Left sidebar (40% width) */}
+        <div className="w-full md:w-2/5 h-[35%] md:h-full bg-primary p-6 md:p-10 flex flex-col justify-between text-white relative overflow-hidden shrink-0">
             <div className="relative z-10">
-                <h2 className="text-3xl font-bold mb-4">
+                <h2 className="text-2xl md:text-3xl font-bold mb-2 md:mb-4">
                     {userType === 'ADMIN' ? 'Admin' : 'Login'}
                 </h2>
-                <p className="text-lg text-white/90 leading-snug font-medium">
+                <p className="text-base md:text-lg text-white/90 leading-snug font-medium max-w-[80%] md:max-w-full">
                     {userType === 'ADMIN' 
-                        ? 'Secure access for system management.' 
-                        : 'Get access to your Orders, Wishlist and Recommendations'}
+                        ? 'System management.' 
+                        : 'Access Orders, Wishlist & More'}
                 </p>
             </div>
             
             {/* Custom Multiservice Platform Icon */}
-            <div className="absolute bottom-0 left-0 right-0 top-0 flex items-end justify-center pb-12 pointer-events-none">
-                <div className="relative scale-110">
+            <div className="absolute bottom-0 left-0 right-0 top-0 flex items-end justify-center pb-6 md:pb-12 pointer-events-none">
+                <div className="relative scale-90 md:scale-110 origin-bottom md:origin-center">
                     <div className="absolute inset-0 bg-white/20 blur-xl rounded-full scale-150"></div>
-                    <div className="w-40 h-40 bg-white/10 rounded-full border border-white/20 backdrop-blur-sm flex items-center justify-center relative">
+                    <div className="w-32 h-32 md:w-40 md:h-40 bg-white/10 rounded-full border border-white/20 backdrop-blur-sm flex items-center justify-center relative">
                          {/* Services Grid */}
-                         <div className="grid grid-cols-2 gap-4 p-4">
-                            <div className="bg-white/20 p-2 rounded-lg flex items-center justify-center">
-                                <ShoppingBag className="w-6 h-6 text-white" />
+                         <div className="grid grid-cols-2 gap-3 md:gap-4 p-3 md:p-4">
+                            <div className="bg-white/20 p-1.5 md:p-2 rounded-lg flex items-center justify-center">
+                                <ShoppingBag className="w-5 h-5 md:w-6 md:h-6 text-white" />
                             </div>
-                            <div className="bg-white/20 p-2 rounded-lg flex items-center justify-center">
-                                 <Stethoscope className="w-6 h-6 text-white" />
+                            <div className="bg-white/20 p-1.5 md:p-2 rounded-lg flex items-center justify-center">
+                                 <Stethoscope className="w-5 h-5 md:w-6 md:h-6 text-white" />
                             </div>
-                            <div className="bg-white/20 p-2 rounded-lg flex items-center justify-center">
-                                 <Truck className="w-6 h-6 text-white" />
+                            <div className="bg-white/20 p-1.5 md:p-2 rounded-lg flex items-center justify-center">
+                                 <Truck className="w-5 h-5 md:w-6 md:h-6 text-white" />
                             </div>
-                            <div className="bg-white/20 p-2 rounded-lg flex items-center justify-center">
-                                 <PartyPopper className="w-6 h-6 text-white" />
+                            <div className="bg-white/20 p-1.5 md:p-2 rounded-lg flex items-center justify-center">
+                                 <PartyPopper className="w-5 h-5 md:w-6 md:h-6 text-white" />
                             </div>
                          </div>
                          {/* Center Hub */}
                          <div className="absolute inset-0 flex items-center justify-center">
-                             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-primary">
-                                <Layers className="w-6 h-6 text-primary" />
+                             <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-primary">
+                                <Layers className="w-5 h-5 md:w-6 md:h-6 text-primary" />
                              </div>
                          </div>
                     </div>
@@ -178,12 +179,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
         </div>
 
         {/* --- RIGHT PANEL (WHITE) --- */}
-        <div className="w-3/5 bg-white p-10 flex flex-col justify-between relative">
+        {/* Mobile: Bottom content (Fill remaining), Desktop: Right sidebar (60% width) */}
+        <div className="w-full md:w-3/5 h-full bg-white p-6 md:p-10 flex flex-col justify-between relative overflow-y-auto">
             
             <div className="flex-1 flex flex-col">
                 {/* Tabs for User/Vendor */}
                 {userType !== 'ADMIN' && (
-                    <div className="flex gap-6 mb-8 border-b border-gray-200 pb-1">
+                    <div className="flex gap-6 mb-6 md:mb-8 border-b border-gray-200 pb-1">
                         <button 
                             onClick={() => { setUserType('USER'); setViewState('MOBILE_INPUT'); }}
                             className={`text-sm font-semibold pb-2 transition-colors ${userType === 'USER' ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-gray-800'}`}
@@ -298,9 +300,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
 
             {/* Footer Area (Socials & Create Account) */}
             {userType !== 'ADMIN' && (
-                <div className="mt-auto">
+                <div className="mt-8 md:mt-auto">
                     {viewState === 'MOBILE_INPUT' && renderSocialLinks()}
-                    <div className="mt-8 text-center">
+                    <div className="mt-8 text-center pb-4 md:pb-0">
                         <button className="text-primary font-bold text-sm hover:underline">
                             New to Dahanu? Create an account
                         </button>

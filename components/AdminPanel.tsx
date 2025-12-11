@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Trash2, Plus, Bell, Settings, ChevronDown, ChevronRight, Mail, Server, Shield, Save, Minus, Upload, CheckCircle, XCircle, AlertCircle, FileText } from 'lucide-react';
+import { Trash2, Plus, Bell, Settings, ChevronDown, ChevronRight, Mail, Server, Shield, Save, Minus, Upload, CheckCircle, XCircle, AlertCircle, FileText, Pin, PinOff } from 'lucide-react';
 import { Category, Vendor, Banner, Product, SystemConfig } from '../types';
 
 interface AdminPanelProps {
@@ -18,6 +18,7 @@ interface AdminPanelProps {
   onAddBanner: (imageUrl: string, link: string, altText: string) => void;
   onRemoveBanner: (id: string) => void;
   onSaveConfig: (config: SystemConfig) => void;
+  onPinVendor: (id: string | undefined) => void; // New Prop
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -25,7 +26,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onAddCategory, onRemoveCategory, onAddSubCategory, onRemoveSubCategory,
   onRemoveVendor, onAddVendor, onApproveVendor,
   onAddBanner, onRemoveBanner,
-  onSaveConfig
+  onSaveConfig, onPinVendor
 }) => {
   const [activeTab, setActiveTab] = useState<'CATS' | 'APPROVALS' | 'VENDORS' | 'BANNERS' | 'CONFIG'>('CATS');
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
@@ -410,8 +411,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     <th className="p-3 border-b">Name</th>
                     <th className="p-3 border-b">Category</th>
                     <th className="p-3 border-b">Contact</th>
-                    <th className="p-3 border-b">Email</th>
-                    <th className="p-3 border-b">Products</th>
+                    <th className="p-3 border-b">Featured</th>
                     <th className="p-3 border-b">Action</th>
                   </tr>
                 </thead>
@@ -426,11 +426,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       </td>
                       <td className="p-3 text-gray-500">{v.categoryIds.join(', ')}</td>
                       <td className="p-3 font-mono">{v.contact}</td>
-                      <td className="p-3 text-gray-500">{v.email || '-'}</td>
-                      <td className="p-3 text-xs">
-                          {v.products?.length ? (
-                              <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded">{v.products.length} Items</span>
-                          ) : '-'}
+                      <td className="p-3">
+                         {config.pinnedVendorId === v.id ? (
+                             <button onClick={() => onPinVendor(undefined)} className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-yellow-200">
+                                 <Pin className="w-3 h-3 fill-current" /> Pinned
+                             </button>
+                         ) : (
+                             <button onClick={() => onPinVendor(v.id)} className="text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 p-1.5 rounded transition">
+                                 <Pin className="w-4 h-4" />
+                             </button>
+                         )}
                       </td>
                       <td className="p-3">
                          <button onClick={() => onRemoveVendor(v.id)} className="text-red-500 hover:bg-red-50 p-2 rounded"><Trash2 className="w-4 h-4" /></button>

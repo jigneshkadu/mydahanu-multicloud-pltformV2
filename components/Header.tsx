@@ -51,7 +51,7 @@ const Header: React.FC<HeaderProps> = ({
                 <h1 className="text-3xl font-logo font-bold tracking-tighter text-white lowercase leading-none">
                     dahanu
                 </h1>
-                <span className="text-[10px] font-bold text-yellow-400 tracking-wider lowercase mt-0.3">
+                <span className="text-[10px] font-bold text-yellow-400 tracking-wider uppercase mt-0.5">
                     Multiservice Platform
                 </span>
             </div>
