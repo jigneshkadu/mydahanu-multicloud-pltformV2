@@ -1,118 +1,139 @@
+
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const mysql = require('mysql2/promise');
 const cors = require('cors');
-const path = require('path');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const DB_PATH = path.join(__dirname, 'dahanu.db');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// --- DATABASE SETUP (SQLite) ---
-const db = new sqlite3.Database(DB_PATH, (err) => {
-  if (err) {
-    console.error('Error opening database ' + DB_PATH, err.message);
-  } else {
-    console.log('Connected to the SQLite database.');
-    initDb();
-  }
-});
-
-// Helper to run queries with promises
-const dbRun = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) reject(err);
-      else resolve(this);
-    });
-  });
+// MySQL Connection Configuration
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '', // Default no password for local dev often
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 };
 
-const dbAll = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows);
-    });
-  });
-};
+const dbName = process.env.DB_NAME || 'dahanu_db';
 
-// Initialize Database (Create Tables & Seed Data)
+let pool;
+
+// Initialize Database
 const initDb = async () => {
   try {
-    // 1. Categories
-    await dbRun(`CREATE TABLE IF NOT EXISTS categories (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      icon TEXT,
-      description TEXT,
-      parent_id TEXT,
-      FOREIGN KEY(parent_id) REFERENCES categories(id)
-    )`);
+    // 1. Create Connection to create DB if not exists
+    const connection = await mysql.createConnection({
+      host: dbConfig.host,
+      user: dbConfig.user,
+      password: dbConfig.password
+    });
 
-    // 2. Vendors
-    await dbRun(`CREATE TABLE IF NOT EXISTS vendors (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      description TEXT,
-      rating DECIMAL(2,1),
-      lat DECIMAL(10,8),
-      lng DECIMAL(11,8),
-      address TEXT,
-      contact TEXT,
-      masked_contact TEXT,
-      is_verified BOOLEAN,
-      image_url TEXT,
-      price_start DECIMAL(10,2),
-      email TEXT
-    )`);
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\`;`);
+    await connection.end();
 
-    // 3. Vendor Categories (Many-to-Many)
-    await dbRun(`CREATE TABLE IF NOT EXISTS vendor_categories (
-      vendor_id TEXT,
-      category_id TEXT,
-      PRIMARY KEY (vendor_id, category_id),
-      FOREIGN KEY(vendor_id) REFERENCES vendors(id),
-      FOREIGN KEY(category_id) REFERENCES categories(id)
-    )`);
+    console.log(`Database ${dbName} checked/created.`);
 
-    // 4. Products
-    await dbRun(`CREATE TABLE IF NOT EXISTS products (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      vendor_id TEXT,
-      name TEXT,
-      price DECIMAL(10,2),
-      FOREIGN KEY(vendor_id) REFERENCES vendors(id)
-    )`);
+    // 2. Initialize Pool with Database
+    pool = mysql.createPool({
+      ...dbConfig,
+      database: dbName
+    });
 
-    // 5. Banners
-    await dbRun(`CREATE TABLE IF NOT EXISTS banners (
-      id TEXT PRIMARY KEY,
-      image_url TEXT,
-      link TEXT,
-      alt_text TEXT
-    )`);
+    console.log('Connected to MySQL Database.');
 
-    // 6. Orders
-    await dbRun(`CREATE TABLE IF NOT EXISTS orders (
-      id TEXT PRIMARY KEY,
-      vendor_id TEXT,
-      customer_name TEXT,
-      customer_phone TEXT,
-      service_requested TEXT,
-      date TEXT,
-      status TEXT,
-      address TEXT,
-      amount DECIMAL(10,2),
-      FOREIGN KEY(vendor_id) REFERENCES vendors(id)
-    )`);
+    // 3. Create Tables
+    // Categories
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS categories (
+        id VARCHAR(50) PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        icon VARCHAR(50),
+        description TEXT,
+        parent_id VARCHAR(50),
+        theme_color VARCHAR(20) DEFAULT '#9C81A4',
+        FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL
+      )
+    `);
 
-    // --- SEED DATA (Only if categories are empty) ---
-    const rows = await dbAll("SELECT count(*) as count FROM categories");
+    // Vendors
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS vendors (
+        id VARCHAR(50) PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        rating DECIMAL(3,1),
+        lat DECIMAL(10,8),
+        lng DECIMAL(11,8),
+        address TEXT,
+        contact VARCHAR(50),
+        masked_contact VARCHAR(50),
+        is_verified BOOLEAN DEFAULT FALSE,
+        is_approved BOOLEAN DEFAULT FALSE,
+        image_url TEXT,
+        price_start DECIMAL(10,2),
+        email VARCHAR(100)
+      )
+    `);
+
+    // Vendor Categories (Junction Table)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS vendor_categories (
+        vendor_id VARCHAR(50),
+        category_id VARCHAR(50),
+        PRIMARY KEY (vendor_id, category_id),
+        FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE,
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Products
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS products (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        vendor_id VARCHAR(50),
+        name VARCHAR(100),
+        price DECIMAL(10,2),
+        FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Banners
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS banners (
+        id VARCHAR(50) PRIMARY KEY,
+        image_url TEXT,
+        link TEXT,
+        alt_text VARCHAR(255)
+      )
+    `);
+
+    // Orders
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS orders (
+        id VARCHAR(50) PRIMARY KEY,
+        vendor_id VARCHAR(50),
+        customer_name VARCHAR(100),
+        customer_phone VARCHAR(20),
+        service_requested VARCHAR(100),
+        date VARCHAR(50),
+        status VARCHAR(20),
+        address TEXT,
+        amount DECIMAL(10,2),
+        FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE SET NULL
+      )
+    `);
+
+    console.log("Tables initialized.");
+
+    // 4. Seed Data
+    const [rows] = await pool.query("SELECT COUNT(*) as count FROM categories");
     if (rows[0].count === 0) {
       console.log("Seeding Database...");
       await seedData();
@@ -120,55 +141,103 @@ const initDb = async () => {
 
   } catch (err) {
     console.error("Database Initialization Error:", err);
+    process.exit(1);
   }
 };
 
 const seedData = async () => {
-  // Categories
-  const cats = [
-    ['events', 'Events Services', 'PartyPopper', 'Everything for occasions', null],
-      ['event_planning', 'Event Planning', null, 'Corporate and private', 'events'],
-        ['decorators', 'Decorators', null, null, 'event_planning'],
-        ['event_mgmt', 'Event Management', null, null, 'event_planning'],
-    ['medical', 'Medical & Health', 'Stethoscope', 'Healthcare services', null],
-      ['hospitals', 'Hospitals & Clinics', null, 'General hospitals', 'medical'],
-    ['home', 'Home & Maintenance', 'Hammer', 'Repairs and renovations', null],
-      ['handyman', 'Handyman', null, 'Plumbers etc', 'home'],
-        ['plumber', 'Plumber', null, null, 'handyman']
-  ];
-  
-  for (const c of cats) {
-    await dbRun("INSERT INTO categories (id, name, icon, description, parent_id) VALUES (?,?,?,?,?)", c);
+  try {
+    // Categories with Theme Colors
+    const categories = [
+      ['events', 'Events Services', 'PartyPopper', 'Everything you need for your special occasions.', '#9C27B0', null],
+      ['medical', 'Medical & Health', 'Stethoscope', 'Healthcare services, clinics, and emergency support.', '#2196F3', null],
+      ['transport', 'Transport', 'Truck', 'Logistics, travel agencies, and vehicle rentals.', '#FF9800', null],
+      ['beauty', 'Beauty & Wellness', 'Sparkles', 'Salons, spas, and fitness centers.', '#E91E63', null],
+      ['home', 'Home & Maintenance', 'Hammer', 'Repairs, renovations, and handyman services.', '#4CAF50', null],
+      ['housekeeping', 'Housekeeping', 'SprayCan', 'Maids, cooks, and daily utility supplies.', '#009688', null],
+      ['food', 'Food & Beverages', 'Utensils', 'Restaurants, cafes, and street food.', '#F44336', null],
+      ['accom', 'Accommodation', 'Hotel', 'Hotels, lodges, and guest houses.', '#FFC107', null]
+    ];
+
+    for (const c of categories) {
+      await pool.query(
+        "INSERT IGNORE INTO categories (id, name, icon, description, theme_color, parent_id) VALUES (?,?,?,?,?,?)",
+        c
+      );
+    }
+    
+    // Sub-Categories
+    const subCategories = [
+      ['event_planning', 'Event Planning', null, null, null, 'events'],
+      ['catering', 'Catering & Food', null, null, null, 'events'],
+      ['plumber', 'Plumber', null, null, null, 'home']
+    ];
+    for (const s of subCategories) {
+       await pool.query(
+        "INSERT IGNORE INTO categories (id, name, icon, description, theme_color, parent_id) VALUES (?,?,?,?,?,?)",
+        s
+      );
+    }
+
+    // Vendors (Added is_approved)
+    const vendors = [
+      ['v1', 'Elite Event Planners', 'Premier event planning', 4.8, 19.9700, 72.7300, '123 Main St, Dahanu', '+919876543210', '+91 98*** **210', true, true, 'https://picsum.photos/300/200?random=10', 5000, 'elite@events.com'],
+      ['v3', 'Quick Fix Plumbers', 'Expert plumbing', 4.2, 19.9650, 72.7250, '88 Pipe Lane, Dahanu', '+919876543212', '+91 98*** **212', true, true, 'https://picsum.photos/300/200?random=12', 150, 'fix@plumbers.com']
+    ];
+
+    for (const v of vendors) {
+      await pool.query(
+        `INSERT IGNORE INTO vendors 
+        (id, name, description, rating, lat, lng, address, contact, masked_contact, is_verified, is_approved, image_url, price_start, email) 
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        v
+      );
+    }
+
+    // Vendor Categories
+    const vc = [
+      ['v1', 'event_planning'],
+      ['v3', 'plumber']
+    ];
+    for (const item of vc) {
+      await pool.query("INSERT IGNORE INTO vendor_categories (vendor_id, category_id) VALUES (?,?)", item);
+    }
+
+    // Products
+    const products = [
+      ['v1', 'Wedding Package', 50000],
+      ['v1', 'Birthday Basic', 15000],
+      ['v3', 'Tap Repair', 150]
+    ];
+    for (const p of products) {
+      await pool.query("INSERT INTO products (vendor_id, name, price) VALUES (?,?,?)", p);
+    }
+
+    // Banners
+    const banners = [
+      ['1', 'https://picsum.photos/1200/300?random=1', '#', 'Big Sale on Home Services'],
+      ['2', 'https://picsum.photos/1200/300?random=2', '#', 'Wedding Season Discounts']
+    ];
+    for (const b of banners) {
+      await pool.query("INSERT IGNORE INTO banners (id, image_url, link, alt_text) VALUES (?,?,?,?)", b);
+    }
+
+    console.log("Database Seeded Successfully.");
+  } catch (err) {
+    console.error("Seeding Error:", err);
   }
-
-  // Vendors
-  await dbRun(`INSERT INTO vendors (id, name, description, rating, lat, lng, address, contact, masked_contact, is_verified, image_url, price_start, email) VALUES 
-  ('v1', 'Elite Event Planners', 'Premier event planning', 4.8, 40.7128, -74.0060, '123 Main St', '+19998887777', '+1 (555) 000-0001', 1, 'https://picsum.photos/300/200?random=10', 500, 'elite@events.com'),
-  ('v3', 'Quick Fix Plumbers', 'Expert plumbing', 4.2, 40.7100, -74.0030, '88 Pipe Lane', '+19998887779', '+1 (555) 000-0003', 1, 'https://picsum.photos/300/200?random=12', 50, 'fix@plumbers.com')`);
-
-  // Vendor Categories
-  await dbRun("INSERT INTO vendor_categories (vendor_id, category_id) VALUES ('v1', 'event_mgmt'), ('v1', 'decorators'), ('v3', 'plumber')");
-
-  // Products
-  await dbRun("INSERT INTO products (vendor_id, name, price) VALUES ('v1', 'Wedding Package', 50000), ('v1', 'Birthday Basic', 15000), ('v3', 'Tap Repair', 150)");
-
-  // Banners
-  await dbRun(`INSERT INTO banners (id, image_url, link, alt_text) VALUES 
-  ('1', 'https://picsum.photos/1200/300?random=1', '#', 'Big Sale on Home Services'),
-  ('2', 'https://picsum.photos/1200/300?random=2', '#', 'Wedding Season Discounts')`);
-
-  console.log("Database Seeded Successfully.");
 };
 
+initDb();
 
 // --- API ROUTES ---
 
 // 1. Get Categories
 app.get('/api/categories', async (req, res) => {
   try {
-    const rows = await dbAll('SELECT * FROM categories');
+    const [rows] = await pool.query('SELECT * FROM categories');
     
-    // Convert flat list to tree
+    // Recursive function to build tree
     const buildTree = (parentId) => {
       return rows
         .filter(cat => cat.parent_id === parentId)
@@ -177,12 +246,14 @@ app.get('/api/categories', async (req, res) => {
           name: cat.name,
           icon: cat.icon,
           description: cat.description,
+          themeColor: cat.theme_color,
           subCategories: buildTree(cat.id)
         }));
     };
 
     res.json(buildTree(null));
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -191,12 +262,17 @@ app.get('/api/categories', async (req, res) => {
 app.get('/api/vendors', async (req, res) => {
   try {
     const { category, search } = req.query;
-    let sql = `SELECT v.*, GROUP_CONCAT(vc.category_id) as categoryIds 
-               FROM vendors v 
-               LEFT JOIN vendor_categories vc ON v.id = vc.vendor_id`;
+    let sql = `
+      SELECT v.*, GROUP_CONCAT(vc.category_id) as categoryIds 
+      FROM vendors v 
+      LEFT JOIN vendor_categories vc ON v.id = vc.vendor_id
+    `;
     
     let conditions = [];
     let params = [];
+
+    // Filter only approved vendors for public API
+    conditions.push("v.is_approved = TRUE");
 
     if (category) {
       conditions.push("vc.category_id = ?");
@@ -212,21 +288,28 @@ app.get('/api/vendors', async (req, res) => {
     }
     sql += " GROUP BY v.id";
 
-    const vendors = await dbAll(sql, params);
+    const [vendors] = await pool.query(sql, params);
 
-    // Fetch products for these vendors
+    // Fetch products and format data
     for (let v of vendors) {
-      const products = await dbAll("SELECT name, price FROM products WHERE vendor_id = ?", [v.id]);
+      const [products] = await pool.query("SELECT name, price FROM products WHERE vendor_id = ?", [v.id]);
       v.products = products;
       v.categoryIds = v.categoryIds ? v.categoryIds.split(',') : [];
-      v.location = { lat: v.lat, lng: v.lng, address: v.address };
+      v.location = { lat: parseFloat(v.lat), lng: parseFloat(v.lng), address: v.address };
       v.maskedContact = v.masked_contact;
-      v.isVerified = !!v.is_verified;
+      v.isVerified = Boolean(v.is_verified);
+      v.isApproved = Boolean(v.is_approved);
       v.imageUrl = v.image_url;
-      v.priceStart = v.price_start;
+      v.priceStart = parseFloat(v.price_start);
       
-      // Cleanup raw snake_case keys if needed, but frontend maps them usually. 
-      // To match existing frontend expected format:
+      // Remove DB specific snake_case keys
+      delete v.masked_contact;
+      delete v.is_verified;
+      delete v.is_approved;
+      delete v.image_url;
+      delete v.price_start;
+      delete v.lat;
+      delete v.lng;
     }
 
     res.json(vendors);
@@ -239,7 +322,7 @@ app.get('/api/vendors', async (req, res) => {
 // 3. Get Banners
 app.get('/api/banners', async (req, res) => {
   try {
-    const rows = await dbAll("SELECT id, image_url as imageUrl, link, alt_text as altText FROM banners");
+    const [rows] = await pool.query("SELECT id, image_url as imageUrl, link, alt_text as altText FROM banners");
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -252,7 +335,7 @@ app.post('/api/orders', async (req, res) => {
     const { vendorId, customerName, customerPhone, serviceRequested, date, address, amount } = req.body;
     const id = 'o' + Date.now();
     
-    await dbRun(
+    await pool.query(
       `INSERT INTO orders (id, vendor_id, customer_name, customer_phone, service_requested, date, status, address, amount)
        VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, ?)`,
       [id, vendorId, customerName, customerPhone, serviceRequested, date, address, amount]
@@ -260,6 +343,7 @@ app.post('/api/orders', async (req, res) => {
 
     res.json({ success: true, orderId: id });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });

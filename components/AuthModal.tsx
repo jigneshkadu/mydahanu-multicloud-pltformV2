@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, ShoppingBag, Stethoscope, Truck, PartyPopper, Layers } from 'lucide-react';
 import { requestOtp, verifyOtp } from '../services/otpService';
 
 interface AuthModalProps {
@@ -51,7 +51,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
     setIsLoading(true);
     
     // Call OTP Service - Pass the ID of the container for Recaptcha
-    // NOTE: Ensure you have setup your firebaseConfig.ts with valid keys!
     const result = await requestOtp(mobile, 'recaptcha-container');
     
     setIsLoading(false);
@@ -75,8 +74,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
 
     if (result.success) {
       const generatedEmail = `${mobile}@${userType.toLowerCase()}.com`;
-      // In a real app, you would check if user exists in backend here
-      // For now, we assume new user if verification passes
       onLoginSuccess(generatedEmail, userType, true);
       onClose();
     } else {
@@ -128,16 +125,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in font-sans">
       <div className="bg-white rounded w-full max-w-3xl flex overflow-hidden relative shadow-2xl h-[528px]">
+        {/* Close Button updated to be visible on white background */}
         <button 
             onClick={onClose} 
-            className="absolute top-2 right-2 text-white/80 hover:text-white z-20 p-2"
+            className="absolute top-3 right-3 text-gray-400 hover:text-gray-800 z-50 p-1 hover:bg-gray-100 rounded-full transition-colors"
         >
           <X className="w-6 h-6" />
         </button>
 
         {/* --- LEFT PANEL (Primary Blue) --- */}
-        <div className="w-2/5 bg-primary p-10 flex flex-col justify-between text-white relative">
-            <div>
+        <div className="w-2/5 bg-primary p-10 flex flex-col justify-between text-white relative overflow-hidden">
+            <div className="relative z-10">
                 <h2 className="text-3xl font-bold mb-4">
                     {userType === 'ADMIN' ? 'Admin' : 'Login'}
                 </h2>
@@ -147,13 +145,35 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess, 
                         : 'Get access to your Orders, Wishlist and Recommendations'}
                 </p>
             </div>
-            <div className="absolute bottom-10 left-10 right-10">
-                {/* Abstract decorative graphic */}
-                <img 
-                    src="https://static-assets-web.flixcart.com/fk-p-linchpin-web/fk-cp-zion/img/login_img_c4a81e.png" 
-                    alt="Login Illustration" 
-                    className="w-full object-contain opacity-90"
-                />
+            
+            {/* Custom Multiservice Platform Icon */}
+            <div className="absolute bottom-0 left-0 right-0 top-0 flex items-end justify-center pb-12 pointer-events-none">
+                <div className="relative scale-110">
+                    <div className="absolute inset-0 bg-white/20 blur-xl rounded-full scale-150"></div>
+                    <div className="w-40 h-40 bg-white/10 rounded-full border border-white/20 backdrop-blur-sm flex items-center justify-center relative">
+                         {/* Services Grid */}
+                         <div className="grid grid-cols-2 gap-4 p-4">
+                            <div className="bg-white/20 p-2 rounded-lg flex items-center justify-center">
+                                <ShoppingBag className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="bg-white/20 p-2 rounded-lg flex items-center justify-center">
+                                 <Stethoscope className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="bg-white/20 p-2 rounded-lg flex items-center justify-center">
+                                 <Truck className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="bg-white/20 p-2 rounded-lg flex items-center justify-center">
+                                 <PartyPopper className="w-6 h-6 text-white" />
+                            </div>
+                         </div>
+                         {/* Center Hub */}
+                         <div className="absolute inset-0 flex items-center justify-center">
+                             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-primary">
+                                <Layers className="w-6 h-6 text-primary" />
+                             </div>
+                         </div>
+                    </div>
+                </div>
             </div>
         </div>
 

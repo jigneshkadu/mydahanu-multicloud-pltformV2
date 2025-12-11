@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dahanu Platform</title>
+    <title>dahanu platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       :root {
@@ -19,6 +20,9 @@
           -ms-overflow-style: none;  /* IE and Edge */
           scrollbar-width: none;  /* Firefox */
       }
+      
+      /* Logo Font */
+      @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;700&display=swap');
     </style>
     <script>
       tailwind.config = {
@@ -31,6 +35,9 @@
             },
             boxShadow: {
               'theme': '0 4px 20px -2px var(--primary-shadow)',
+            },
+            fontFamily: {
+              logo: ['Comfortaa', 'cursive'],
             }
           }
         }
@@ -51,7 +58,7 @@
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-bgLight font-sans antialiased text-gray-800">
+  <body class="font-sans antialiased text-gray-800 min-h-screen bg-gradient-to-b from-[#1a1c2e] via-[#2d2b42] to-[#f3f4f6]">
     <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
