@@ -35,6 +35,7 @@ export interface Vendor {
   priceStart: number;
   email?: string;
   products?: Product[];
+  supportsDelivery?: boolean; // New flag for Delivery Model (Fresh/Mart)
 }
 
 export interface Banner {

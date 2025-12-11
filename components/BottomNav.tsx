@@ -1,6 +1,6 @@
 
 import React, { useRef } from 'react';
-import { ChevronLeft, ChevronRight, PartyPopper, Stethoscope, Truck, Sparkles, Hammer, SprayCan, Utensils, Hotel, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, PartyPopper, Stethoscope, Truck, Sparkles, Hammer, SprayCan, Utensils, Hotel, Calendar, Apple, ShoppingBasket } from 'lucide-react';
 import { Category } from '../types';
 
 interface BottomNavProps {
@@ -35,6 +35,8 @@ const BottomNav: React.FC<BottomNavProps> = ({ categories, onCategoryClick }) =>
       case 'SprayCan': return <SprayCan {...props} />;
       case 'Utensils': return <Utensils {...props} />;
       case 'Hotel': return <Hotel {...props} />;
+      case 'Apple': return <Apple {...props} />;
+      case 'ShoppingBasket': return <ShoppingBasket {...props} />;
       default: return <Calendar {...props} />;
     }
   };

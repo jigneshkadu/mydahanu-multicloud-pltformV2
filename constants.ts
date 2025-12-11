@@ -3,6 +3,47 @@ import { Category, Vendor, Banner, Order } from './types';
 
 export const APP_CATEGORIES: Category[] = [
   {
+    id: 'dahanu_fresh',
+    name: 'Dahanu Fresh',
+    icon: 'Apple',
+    description: 'Fresh fruits, vegetables and organic produce directly from farms.',
+    themeColor: '#43A047', // Green
+    subCategories: [
+      { 
+        id: 'fruits', 
+        name: 'Fresh Fruits', 
+        description: 'Seasonal and exotic fruits.',
+        subCategories: [
+            { id: 'seasonal_fruits', name: 'Seasonal Fruits' },
+            { id: 'exotic_fruits', name: 'Exotic Fruits' }
+        ]
+      },
+      { 
+        id: 'vegetables', 
+        name: 'Vegetables', 
+        description: 'Daily fresh vegetables.',
+        subCategories: [
+            { id: 'daily_veggies', name: 'Daily Veggies' },
+            { id: 'leafy_greens', name: 'Leafy Greens' }
+        ]
+      },
+      { id: 'organic', name: 'Organic Produce', description: 'Certified organic farming products.' }
+    ]
+  },
+  {
+    id: 'dahanu_mart',
+    name: 'Dahanu Mart',
+    icon: 'ShoppingBasket',
+    description: 'Groceries, daily essentials, and supermarket items delivered home.',
+    themeColor: '#FF5722', // Deep Orange
+    subCategories: [
+      { id: 'daily_needs', name: 'Daily Essentials', description: 'Oil, Ghee, Masala, Rice, Flour.' },
+      { id: 'snacks', name: 'Snacks & Beverages', description: 'Biscuits, Chips, Cold Drinks, Juices.' },
+      { id: 'personal_care', name: 'Personal Care', description: 'Soaps, Shampoos, Lotions, Hygiene.' },
+      { id: 'cleaning', name: 'Household & Cleaning', description: 'Detergents, Cleaners, Disposables.' }
+    ]
+  },
+  {
     id: 'events',
     name: 'Events Services',
     icon: 'PartyPopper',
@@ -290,6 +331,52 @@ export const MOCK_VENDORS: Vendor[] = [
     products: [
       { name: 'Tap Repair', price: 150 },
       { name: 'Pipe Fitting', price: 500 }
+    ]
+  },
+  {
+    id: 'v4',
+    name: 'Green Farm Fresh',
+    categoryIds: ['seasonal_fruits', 'daily_veggies', 'dahanu_fresh'],
+    description: 'Fresh organic vegetables from local Dahanu farms.',
+    rating: 4.9,
+    location: { lat: 19.9700, lng: 72.7300, address: 'Farm No 4, Bordi Road' },
+    contact: '+919999988888',
+    maskedContact: '+91 99999 88888',
+    isVerified: true,
+    isApproved: true,
+    supportsDelivery: true, // Supports Delivery
+    imageUrl: 'https://picsum.photos/300/200?random=13',
+    priceStart: 20,
+    email: 'fresh@greenfarm.com',
+    products: [
+      { name: 'Red Apples (1kg)', price: 180 },
+      { name: 'Fresh Spinach (Bunch)', price: 20 },
+      { name: 'Alphonso Mango (Dozen)', price: 800 },
+      { name: 'Tomatoes (1kg)', price: 40 }
+    ]
+  },
+  {
+    id: 'v5',
+    name: 'Dahanu Super Mart',
+    categoryIds: ['daily_needs', 'snacks', 'dahanu_mart'],
+    description: 'Your daily supermarket at your doorstep. Best prices guaranteed.',
+    rating: 4.6,
+    location: { lat: 19.9750, lng: 72.7350, address: 'Main Market, Dahanu East' },
+    contact: '+919888877777',
+    maskedContact: '+91 98888 77777',
+    isVerified: true,
+    isApproved: true,
+    supportsDelivery: true, // Supports Delivery
+    imageUrl: 'https://picsum.photos/300/200?random=14',
+    priceStart: 10,
+    email: 'sales@supermart.com',
+    products: [
+      { name: 'Sunflower Oil (1L)', price: 140 },
+      { name: 'Basmati Rice (1kg)', price: 90 },
+      { name: 'Whole Wheat Atta (5kg)', price: 220 },
+      { name: 'Sugar (1kg)', price: 42 },
+      { name: 'Good Day Biscuits', price: 20 },
+      { name: 'Tata Salt (1kg)', price: 25 }
     ]
   }
 ];

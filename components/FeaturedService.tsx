@@ -1,23 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { Vendor } from '../types';
-import { MapPin, Star, Phone } from 'lucide-react';
+import { MapPin, Star, Phone, ShoppingBag } from 'lucide-react';
 
 interface FeaturedServiceProps {
   vendors: Vendor[];
   pinnedVendorId?: string;
   onContactClick: (vendor: Vendor) => void;
+  onOrderClick?: (vendor: Vendor) => void; // New Prop
 }
 
-const FeaturedService: React.FC<FeaturedServiceProps> = ({ vendors, pinnedVendorId, onContactClick }) => {
+const FeaturedService: React.FC<FeaturedServiceProps> = ({ vendors, pinnedVendorId, onContactClick, onOrderClick }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // If a vendor is pinned, we only care about that one.
   const pinnedVendor = pinnedVendorId ? vendors.find(v => v.id === pinnedVendorId) : null;
-  
-  // Logic: 
-  // 1. If pinnedVendor exists, show it static.
-  // 2. If not, cycle through `vendors` every 1 second.
   
   useEffect(() => {
     if (pinnedVendor) return; // Stop cycling if pinned
@@ -25,7 +22,7 @@ const FeaturedService: React.FC<FeaturedServiceProps> = ({ vendors, pinnedVendor
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % vendors.length);
-    }, 1000); // 1 Second per vendor as requested
+    }, 4000); // Changed to 4 seconds for better readability
 
     return () => clearInterval(interval);
   }, [pinnedVendor, vendors.length]);
@@ -38,7 +35,7 @@ const FeaturedService: React.FC<FeaturedServiceProps> = ({ vendors, pinnedVendor
     <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-4 shadow-sm relative overflow-hidden group transition-all hover:shadow-md">
       {/* Label Tag */}
       <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-3 py-1 rounded-bl-lg z-10 shadow-sm">
-        {pinnedVendor ? 'FEATURED' : 'SERVICE IN DAHANU'}
+        {pinnedVendor ? 'FEATURED' : 'HIGHLIGHTED SERVICE'}
       </div>
       
       <div className="flex flex-row gap-4 items-center">
@@ -65,12 +62,23 @@ const FeaturedService: React.FC<FeaturedServiceProps> = ({ vendors, pinnedVendor
               <div className="flex items-center gap-1 bg-white border border-gray-100 px-2 py-1 rounded-full text-[10px] font-bold shadow-sm">
                  <span className="text-green-600">{displayVendor.rating}</span> <Star className="w-2 h-2 fill-green-600 text-green-600" />
               </div>
-              <button 
-                onClick={() => onContactClick(displayVendor)}
-                className="bg-primary text-white text-xs px-4 py-1.5 rounded-full shadow hover:bg-opacity-90 transition flex items-center gap-1 font-bold"
-              >
-                 <Phone className="w-3 h-3" /> Contact
-              </button>
+              
+              {/* Dynamic Action Button */}
+              {displayVendor.supportsDelivery && onOrderClick ? (
+                  <button 
+                    onClick={() => onOrderClick(displayVendor)}
+                    className="bg-green-600 text-white text-xs px-4 py-1.5 rounded-full shadow hover:bg-green-700 transition flex items-center gap-1 font-bold animate-fade-in"
+                  >
+                     <ShoppingBag className="w-3 h-3" /> Order Now
+                  </button>
+              ) : (
+                  <button 
+                    onClick={() => onContactClick(displayVendor)}
+                    className="bg-primary text-white text-xs px-4 py-1.5 rounded-full shadow hover:bg-opacity-90 transition flex items-center gap-1 font-bold"
+                  >
+                     <Phone className="w-3 h-3" /> Contact
+                  </button>
+              )}
            </div>
         </div>
       </div>

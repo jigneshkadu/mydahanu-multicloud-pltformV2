@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowLeft, ArrowRight, Calendar, PartyPopper, Stethoscope, Truck, Sparkles, Hammer, SprayCan, Utensils, Hotel, PlusCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, PartyPopper, Stethoscope, Truck, Sparkles, Hammer, SprayCan, Utensils, Hotel, PlusCircle, Apple, ShoppingBasket } from 'lucide-react';
 import { Category, Vendor } from '../types';
 import MapVisualizer from './MapVisualizer';
 
@@ -37,6 +37,8 @@ const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectS
       case 'SprayCan': return <SprayCan {...props} />;
       case 'Utensils': return <Utensils {...props} />;
       case 'Hotel': return <Hotel {...props} />;
+      case 'Apple': return <Apple {...props} />;
+      case 'ShoppingBasket': return <ShoppingBasket {...props} />;
       default: return <Calendar {...props} />;
     }
   };

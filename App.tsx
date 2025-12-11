@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  User, UserRole, Vendor, Category, Banner, Order, SystemConfig 
+  User, UserRole, Vendor, Category, Banner, Order, SystemConfig, Product
 } from './types';
 import { 
   APP_CATEGORIES, INITIAL_BANNERS, MOCK_VENDORS, MOCK_ORDERS 
@@ -18,11 +18,39 @@ import CategoryView from './components/CategoryView';
 import BottomNav from './components/BottomNav';
 import SideMenu from './components/SideMenu';
 import FeaturedService from './components/FeaturedService';
-import { PhoneCall, Star, CheckCircle, MapPin, ShoppingBag, Plus, Navigation, PartyPopper, Stethoscope, Truck, Sparkles, Hammer, SprayCan, Utensils, Hotel, Calendar } from 'lucide-react';
+import DeliveryOrderModal from './components/DeliveryOrderModal';
+import VendorCard from './components/VendorCard';
+import { 
+  MapPin, Plus, ShoppingBag, Star, Navigation, PartyPopper, Stethoscope, 
+  Truck, Sparkles, Hammer, SprayCan, Utensils, Hotel, Apple, ShoppingBasket, Calendar 
+} from 'lucide-react';
 import { searchNearbyServices } from './services/geminiService';
 
 // View States
 type ViewState = 'HOME' | 'CATEGORY' | 'LIST' | 'ADMIN' | 'REGISTER' | 'VENDOR_DASHBOARD';
+
+// Helper: Find category object by ID recursively
+const findCategoryById = (categories: Category[], id: string): Category | null => {
+  for (const cat of categories) {
+    if (cat.id === id) return cat;
+    if (cat.subCategories) {
+      const found = findCategoryById(cat.subCategories, id);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
+// Helper: Get all descendant IDs of a category
+const getRecursiveCategoryIds = (cat: Category): string[] => {
+  let ids = [cat.id];
+  if (cat.subCategories) {
+    cat.subCategories.forEach(sub => {
+      ids = [...ids, ...getRecursiveCategoryIds(sub)];
+    });
+  }
+  return ids;
+};
 
 const App: React.FC = () => {
   // --- State ---
@@ -40,6 +68,9 @@ const App: React.FC = () => {
   const [banners, setBanners] = useState<Banner[]>(INITIAL_BANNERS);
   const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS); // For vendor dashboard
   
+  // Delivery Model State
+  const [selectedDeliveryVendor, setSelectedDeliveryVendor] = useState<Vendor | null>(null);
+
   // System Configuration with Persistence
   const [systemConfig, setSystemConfig] = useState<SystemConfig>(() => {
       const saved = localStorage.getItem('system_config');
@@ -206,6 +237,35 @@ const App: React.FC = () => {
     }
   };
 
+  const handleOrderDeliveryClick = (vendor: Vendor) => {
+    if (!user) {
+      setAuthInitialMode('USER');
+      setAuthOpen(true);
+      return;
+    }
+    setSelectedDeliveryVendor(vendor);
+  };
+
+  const handlePlaceOrder = (items: { product: Product, quantity: number }[], total: number) => {
+     if (!user || !selectedDeliveryVendor) return;
+
+     const serviceDesc = "Delivery: " + items.map(i => `${i.quantity}x ${i.product.name}`).join(', ');
+
+     const newOrder: Order = {
+         id: 'ord' + Date.now(),
+         vendorId: selectedDeliveryVendor.id,
+         customerName: user.name,
+         customerPhone: user.phone || '9876543210',
+         serviceRequested: serviceDesc,
+         date: new Date().toLocaleDateString(),
+         status: 'PENDING',
+         amount: total,
+         address: 'My Home Address'
+     };
+
+     setOrders([newOrder, ...orders]);
+  };
+
   const handleDirectionClick = (vendor: Vendor) => {
       const url = `https://www.google.com/maps/dir/?api=1&destination=${vendor.location.lat},${vendor.location.lng}`;
       window.open(url, '_blank');
@@ -284,20 +344,10 @@ const App: React.FC = () => {
   };
 
   // --- Icon Helper for Grid ---
-  const getIcon = (iconName: string | undefined, color: string) => {
-    const props = { className: "w-8 h-8 mb-2", style: { color } };
-    switch(iconName) {
-      case 'PartyPopper': return <PartyPopper {...props} />;
-      case 'Stethoscope': return <Stethoscope {...props} />;
-      case 'Truck': return <Truck {...props} />;
-      case 'Sparkles': return <Sparkles {...props} />;
-      case 'Hammer': return <Hammer {...props} />;
-      case 'SprayCan': return <SprayCan {...props} />;
-      case 'Utensils': return <Utensils {...props} />;
-      case 'Hotel': return <Hotel {...props} />;
-      default: return <Calendar {...props} />;
-    }
-  };
+  // Note: App.tsx uses lucid-react icons directly in imports for grid buttons in mobile view.
+  // The logic for getIcon is embedded or imported. Here we simplify by using a direct render in the map if needed.
+  // We keep the existing helper in App.tsx to render category icons.
+  // This helper is used in the Mobile Grid section of renderHome.
 
   // --- Render Logic ---
 
@@ -310,6 +360,7 @@ const App: React.FC = () => {
              vendors={approvedVendors} 
              pinnedVendorId={systemConfig.pinnedVendorId}
              onContactClick={handleContactClick}
+             onOrderClick={handleOrderDeliveryClick} // Added this prop
           />
       </div>
       
@@ -318,18 +369,33 @@ const App: React.FC = () => {
          <div className="bg-white rounded-xl shadow-lg p-5">
             <h2 className="text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider text-center">Services in Dahanu</h2>
             <div className="grid grid-cols-4 gap-4">
-                {categories.map(cat => (
-                    <button 
-                        key={cat.id} 
-                        onClick={() => handleCategoryClick(cat)}
-                        className="flex flex-col items-center justify-start gap-1"
-                    >
-                        <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm">
-                            {getIcon(cat.icon, cat.themeColor || '#666')}
-                        </div>
-                        <span className="text-[10px] text-center font-bold text-gray-700 leading-tight truncate w-full">{cat.name}</span>
-                    </button>
-                ))}
+                {categories.map(cat => {
+                    // Simple Icon mapping for the grid
+                    const IconComponent = (() => {
+                        // We do a simple mapping based on cat.icon string if available, or fallback
+                        // Since we can't easily dynamic import all lucide icons here without a map, 
+                        // we rely on the generic 'Category' logic or assume the user has set up the icon mapping 
+                        // in previous steps. 
+                        // For this snippet, we will just use a generic placeholder if getIcon logic isn't fully duplicated here.
+                        // However, App.tsx DOES have a getIcon helper usually.
+                        return null; 
+                    })();
+                    
+                    return (
+                        <button 
+                            key={cat.id} 
+                            onClick={() => handleCategoryClick(cat)}
+                            className="flex flex-col items-center justify-start gap-1 group"
+                        >
+                            <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm group-active:scale-95 transition">
+                                {/* We reuse the CategoryView/BottomNav icon logic if possible, or just render a placeholder. 
+                                    In the previous App.tsx, getIcon was defined. We keep it.*/}
+                                {getIcon(cat.icon, cat.themeColor || '#666')}
+                            </div>
+                            <span className="text-[10px] text-center font-bold text-gray-700 leading-tight truncate w-full">{cat.name}</span>
+                        </button>
+                    );
+                })}
             </div>
          </div>
       </section>
@@ -393,12 +459,24 @@ const App: React.FC = () => {
   );
 
   const renderVendorList = () => {
-    // Filter Logic: Using Approved Vendors only
+    // Robust Filtering Logic:
+    // 1. Determine the target category ID (Subcategory or Main Category)
+    const targetId = activeSubCategoryId || activeCategory?.id;
     let filtered = approvedVendors;
-    if (activeSubCategoryId) {
-      filtered = approvedVendors.filter(v => v.categoryIds.includes(activeSubCategoryId));
-    } else if (activeCategory) {
-       filtered = approvedVendors; 
+
+    if (targetId) {
+      // Find the Category object for this ID
+      const targetCat = findCategoryById(categories, targetId);
+      
+      if (targetCat) {
+        // Get ALL IDs in this branch (e.g., 'dahanu_fresh' -> ['dahanu_fresh', 'fruits', 'seasonal_fruits', ...])
+        const relevantIds = getRecursiveCategoryIds(targetCat);
+        
+        // Filter vendors who have ANY of these IDs in their categoryIds list
+        filtered = approvedVendors.filter(v => 
+          v.categoryIds.some(catId => relevantIds.includes(catId))
+        );
+      }
     }
 
     return (
@@ -436,47 +514,14 @@ const App: React.FC = () => {
                 </div>
               ) : (
                 filtered.map((v, index) => (
-                  <div key={v.id} className="bg-white p-4 rounded-xl shadow-theme hover:shadow-lg transition flex flex-col md:flex-row gap-4 group border-l-4 border-l-transparent hover:border-l-primary">
-                    <div className="w-full md:w-48 h-32 bg-gray-100 rounded-lg overflow-hidden relative shrink-0">
-                       <img src={v.imageUrl} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                       {v.isVerified && <div className="absolute top-1 left-1 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1"><CheckCircle className="w-3 h-3"/> VERIFIED</div>}
-                       
-                       {/* Location Marker Badge */}
-                       <div className="absolute bottom-1 right-1 bg-white text-gray-800 w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-md">
-                          {String.fromCharCode(65 + index)}
-                       </div>
-                    </div>
-                    <div className="flex-1">
-                       <h3 className="text-lg font-bold text-gray-800 flex justify-between">
-                           {v.name}
-                       </h3>
-                       <div className="flex items-center gap-2 text-sm mb-2">
-                          <span className="bg-green-600 text-white px-1.5 rounded text-xs font-bold flex items-center">{v.rating} <Star className="w-3 h-3 ml-0.5 fill-current"/></span>
-                          <span className="text-gray-500">120 Ratings</span>
-                       </div>
-                       <p className="text-sm text-gray-600 mb-2 line-clamp-2">{v.description}</p>
-                       <div className="text-xs text-gray-500 flex items-center gap-1 mb-3">
-                          <MapPin className="w-3 h-3" /> {v.location.address}
-                       </div>
-                    </div>
-                    <div className="flex flex-col justify-between items-end min-w-[140px]">
-                       <div className="text-xl font-bold">₹{v.priceStart}<span className="text-xs font-normal text-gray-500"> onwards</span></div>
-                       <div className="w-full space-y-2">
-                            <button 
-                                onClick={() => handleContactClick(v)}
-                                className="bg-primary text-white px-6 py-2.5 rounded-sm font-bold shadow hover:bg-white/20 w-full flex items-center justify-center gap-2 transition-colors"
-                            >
-                                <PhoneCall className="w-4 h-4" /> Contact
-                            </button>
-                            <button 
-                                onClick={() => handleDirectionClick(v)}
-                                className="bg-white border border-primary text-primary px-6 py-2.5 rounded-sm font-bold shadow-sm hover:bg-gray-50 w-full flex items-center justify-center gap-2 transition-colors"
-                            >
-                                <Navigation className="w-4 h-4" /> Direction
-                            </button>
-                       </div>
-                    </div>
-                  </div>
+                    <VendorCard 
+                        key={v.id}
+                        vendor={v}
+                        index={index}
+                        onContact={handleContactClick}
+                        onDirection={handleDirectionClick}
+                        onOrder={handleOrderDeliveryClick}
+                    />
                 ))
               )}
             </div>
@@ -492,6 +537,24 @@ const App: React.FC = () => {
          </aside>
       </div>
     );
+  };
+
+  // Helper function reused from previous implementation
+  const getIcon = (iconName: string | undefined, color: string) => {
+    const props = { className: "w-8 h-8 mb-2", style: { color } };
+    switch(iconName) {
+      case 'PartyPopper': return <PartyPopper {...props} />;
+      case 'Stethoscope': return <Stethoscope {...props} />;
+      case 'Truck': return <Truck {...props} />;
+      case 'Sparkles': return <Sparkles {...props} />;
+      case 'Hammer': return <Hammer {...props} />;
+      case 'SprayCan': return <SprayCan {...props} />;
+      case 'Utensils': return <Utensils {...props} />;
+      case 'Hotel': return <Hotel {...props} />;
+      case 'Apple': return <Apple {...props} />;
+      case 'ShoppingBasket': return <ShoppingBasket {...props} />;
+      default: return <Calendar {...props} />;
+    }
   };
 
   return (
@@ -596,6 +659,16 @@ const App: React.FC = () => {
         onLoginSuccess={handleLoginSuccess} 
         initialMode={authInitialMode}
       />
+
+      {/* DELIVERY ORDER MODAL */}
+      {selectedDeliveryVendor && (
+          <DeliveryOrderModal 
+              isOpen={!!selectedDeliveryVendor}
+              onClose={() => setSelectedDeliveryVendor(null)}
+              vendor={selectedDeliveryVendor}
+              onPlaceOrder={handlePlaceOrder}
+          />
+      )}
     </div>
   );
 };
