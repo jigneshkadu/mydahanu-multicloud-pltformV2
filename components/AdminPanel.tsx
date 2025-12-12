@@ -48,7 +48,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     location: { lat: 0, lng: 0, address: '' },
     products: []
   });
-  const [newProduct, setNewProduct] = useState<Product>({ name: '', price: 0 });
+  const [newProduct, setNewProduct] = useState<Product>({ name: '', price: 0, image: '' });
 
   // Config State - Initialized from props
   const [emailConfig, setEmailConfig] = useState<SystemConfig>(config);
@@ -89,7 +89,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
              ...newVendor,
              products: [...(newVendor.products || []), newProduct]
          });
-         setNewProduct({ name: '', price: 0 });
+         setNewProduct({ name: '', price: 0, image: '' });
      }
   };
 
@@ -382,6 +382,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                                  <div className="flex gap-2 mb-2">
                                      <input placeholder="Product Name" className="flex-1 border p-1 rounded text-sm" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} />
                                      <input placeholder="Price" type="number" className="w-20 border p-1 rounded text-sm" value={newProduct.price || ''} onChange={e => setNewProduct({...newProduct, price: parseFloat(e.target.value)})} />
+                                     <input placeholder="Img URL" className="w-24 border p-1 rounded text-sm" value={newProduct.image || ''} onChange={e => setNewProduct({...newProduct, image: e.target.value})} />
                                      <button onClick={handleAddProduct} className="bg-green-500 text-white px-3 rounded text-sm font-bold">+</button>
                                  </div>
                                  <ul className="max-h-24 overflow-y-auto space-y-1">

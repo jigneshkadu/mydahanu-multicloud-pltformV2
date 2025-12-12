@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X, UserCircle, HelpCircle, Gift, Rocket, Briefcase, ShoppingBag, Plane, Tag, ShieldCheck, LogOut, LogIn } from 'lucide-react';
+import { X, UserCircle, HelpCircle, Gift, Rocket, Briefcase, ShoppingBag, Plane, Tag, LogOut, LogIn } from 'lucide-react';
 import { User } from '../types';
 
 interface SideMenuProps {
@@ -8,11 +8,10 @@ interface SideMenuProps {
   onClose: () => void;
   user: User | null;
   onLogin: () => void;
-  onAdminPanel: () => void;
   onLogout: () => void;
 }
 
-const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, user, onLogin, onAdminPanel, onLogout }) => {
+const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, user, onLogin, onLogout }) => {
   return (
     <>
       {/* Backdrop */}
@@ -47,14 +46,6 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, user, onLogin, onA
         {/* Menu Items */}
         <div className="overflow-y-auto h-[calc(100%-80px)] p-4 space-y-6">
             
-            {/* Admin Section - Always Visible */}
-            <div className="border-b border-gray-100 pb-4">
-                 <h3 className="font-bold text-gray-900 mb-3 px-2 text-sm uppercase tracking-wider">Admin</h3>
-                 <button onClick={() => { onAdminPanel(); onClose(); }} className="w-full text-left px-3 py-2.5 hover:bg-gray-50 rounded-lg flex items-center gap-3 text-sm text-gray-700 font-medium">
-                    <ShieldCheck className="w-4 h-4 text-primary" /> Admin Panel
-                 </button>
-            </div>
-
             {/* Programs & Features */}
             <div className="border-b border-gray-100 pb-4">
                 <h3 className="font-bold text-gray-900 mb-3 px-2 text-sm uppercase tracking-wider">Programs & Features</h3>

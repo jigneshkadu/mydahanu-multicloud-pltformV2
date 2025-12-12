@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
-import { Category, Vendor } from '../types';
-import { MapPin, Crosshair, Loader2 } from 'lucide-react';
+import { Category, Vendor, Product } from '../types';
+import { MapPin, Crosshair, Loader2, Plus, Trash2, Image } from 'lucide-react';
 
 interface VendorRegistrationProps {
   categories: Category[];
@@ -22,12 +22,17 @@ const VendorRegistration: React.FC<VendorRegistrationProps> = ({ categories, onS
     address: '',
     description: '',
     lat: '',
-    lng: ''
+    lng: '',
+    promotionalBannerUrl: ''
   });
   
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubCategory, setSelectedSubCategory] = useState('');
   const [detectingLoc, setDetectingLoc] = useState(false);
+  
+  // Product Management
+  const [products, setProducts] = useState<Product[]>([]);
+  const [newProduct, setNewProduct] = useState<Product>({ name: '', price: 0, image: '' });
 
   // Helper to flatten subcategories for the dropdown AND keep track of the ID path
   const subCategoriesList = useMemo(() => {
@@ -106,6 +111,19 @@ const VendorRegistration: React.FC<VendorRegistrationProps> = ({ categories, onS
       );
   };
 
+  const handleAddProduct = () => {
+     if (newProduct.name && newProduct.price > 0) {
+         setProducts([...products, newProduct]);
+         setNewProduct({ name: '', price: 0, image: '' });
+     } else {
+         alert("Please enter valid product name and price");
+     }
+  };
+
+  const handleRemoveProduct = (index: number) => {
+      setProducts(products.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -127,6 +145,9 @@ const VendorRegistration: React.FC<VendorRegistrationProps> = ({ categories, onS
 
     const lat = parseFloat(formData.lat) || 0;
     const lng = parseFloat(formData.lng) || 0;
+    
+    // Determine if supports delivery (e.g. for Fresh/Mart categories)
+    const isDeliveryCategory = catIds.some(id => id.includes('fresh') || id.includes('mart') || id.includes('food'));
 
     onSubmit({
       ...formData,
@@ -137,7 +158,9 @@ const VendorRegistration: React.FC<VendorRegistrationProps> = ({ categories, onS
       isVerified: false,
       isApproved: false, // Default to false for self-registration
       imageUrl: 'https://picsum.photos/300/200', // Placeholder
-      priceStart: 0,
+      priceStart: products.length > 0 ? Math.min(...products.map(p => p.price)) : 0,
+      products: products,
+      supportsDelivery: isDeliveryCategory,
       location: { lat, lng, address: formData.address }
     });
     
@@ -195,6 +218,18 @@ const VendorRegistration: React.FC<VendorRegistrationProps> = ({ categories, onS
                 ))}
             </select>
             </div>
+        </div>
+        
+        {/* Promotional Banner */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Promotional Banner URL (Optional)</label>
+          <input 
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary"
+            value={formData.promotionalBannerUrl}
+            onChange={e => setFormData({...formData, promotionalBannerUrl: e.target.value})}
+            placeholder="https://... (Link to your promo banner)"
+          />
+          <p className="text-xs text-gray-500 mt-1">This banner may appear in category listings to promote your services.</p>
         </div>
 
         {/* Contact */}
@@ -273,6 +308,65 @@ const VendorRegistration: React.FC<VendorRegistrationProps> = ({ categories, onS
             onChange={e => setFormData({...formData, description: e.target.value})}
             placeholder="Tell customers what you offer..."
           />
+        </div>
+
+        {/* Product Addition Section */}
+        <div className="border rounded-lg p-4 bg-gray-50">
+            <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2"><Plus className="w-4 h-4"/> Add Products / Services</h3>
+            <div className="grid grid-cols-12 gap-2 mb-3 items-end">
+                <div className="col-span-5">
+                    <input 
+                        className="w-full border rounded p-2 text-sm" 
+                        placeholder="Product Name" 
+                        value={newProduct.name}
+                        onChange={e => setNewProduct({...newProduct, name: e.target.value})}
+                    />
+                </div>
+                <div className="col-span-3">
+                    <input 
+                        type="number"
+                        className="w-full border rounded p-2 text-sm" 
+                        placeholder="Price" 
+                        value={newProduct.price || ''}
+                        onChange={e => setNewProduct({...newProduct, price: parseFloat(e.target.value)})}
+                    />
+                </div>
+                <div className="col-span-3">
+                     <input 
+                        className="w-full border rounded p-2 text-sm" 
+                        placeholder="Image URL" 
+                        value={newProduct.image || ''}
+                        onChange={e => setNewProduct({...newProduct, image: e.target.value})}
+                    />
+                </div>
+                <div className="col-span-1">
+                    <button type="button" onClick={handleAddProduct} className="bg-primary text-white p-2 rounded hover:bg-[#7E6885] w-full flex justify-center">
+                        <Plus className="w-5 h-5"/>
+                    </button>
+                </div>
+            </div>
+            
+            {/* Product List Preview */}
+            {products.length > 0 && (
+                <ul className="space-y-2 max-h-40 overflow-y-auto">
+                    {products.map((p, idx) => (
+                        <li key={idx} className="flex justify-between items-center bg-white p-2 rounded shadow-sm border">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-gray-100 rounded overflow-hidden">
+                                    {p.image ? <img src={p.image} className="w-full h-full object-cover"/> : <Image className="w-4 h-4 m-auto text-gray-400 mt-2"/>}
+                                </div>
+                                <div className="text-sm">
+                                    <div className="font-semibold text-gray-800">{p.name}</div>
+                                    <div className="text-xs text-gray-500">₹{p.price}</div>
+                                </div>
+                            </div>
+                            <button type="button" onClick={() => handleRemoveProduct(idx)} className="text-red-500 p-1 hover:bg-red-50 rounded">
+                                <Trash2 className="w-4 h-4"/>
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
 
         <div className="flex justify-between pt-4">

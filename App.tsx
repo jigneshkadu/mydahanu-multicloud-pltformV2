@@ -22,7 +22,7 @@ import DeliveryOrderModal from './components/DeliveryOrderModal';
 import VendorCard from './components/VendorCard';
 import { 
   MapPin, Plus, ShoppingBag, Star, Navigation, PartyPopper, Stethoscope, 
-  Truck, Sparkles, Hammer, SprayCan, Utensils, Hotel, Apple, ShoppingBasket, Calendar 
+  Truck, Sparkles, Hammer, SprayCan, Utensils, Hotel, Apple, ShoppingBasket, Calendar, ArrowLeft, ShieldCheck, Zap, Headphones, CreditCard
 } from 'lucide-react';
 import { searchNearbyServices } from './services/geminiService';
 
@@ -93,6 +93,8 @@ const App: React.FC = () => {
 
   // Computed: Only Approved Vendors for public view
   const approvedVendors = vendors.filter(v => v.isApproved);
+  
+  const isAdminRoute = window.location.pathname === '/admin';
 
   // --- Effects ---
   useEffect(() => {
@@ -114,6 +116,18 @@ const App: React.FC = () => {
       setLocationText('N/A');
     }
   }, []);
+  
+  // Admin Route Handling
+  useEffect(() => {
+    if (isAdminRoute) {
+        if (!user || user.role !== UserRole.ADMIN) {
+            setAuthInitialMode('ADMIN');
+            setAuthOpen(true);
+        } else {
+            setView('ADMIN');
+        }
+    }
+  }, [isAdminRoute, user]);
 
   // --- Theme Management ---
   const updateThemeColor = (color: string) => {
@@ -145,6 +159,13 @@ const App: React.FC = () => {
 
     // Redirection Logic
     if (userRole === UserRole.ADMIN) {
+        if (isAdminRoute) {
+            // Stay on admin route
+        } else {
+            // Redirect to admin route if logged in from main site (though main site link is removed)
+             window.location.href = '/admin';
+             return;
+        }
         setView('ADMIN');
         resetTheme();
     } else if (userRole === UserRole.VENDOR) {
@@ -165,8 +186,12 @@ const App: React.FC = () => {
 
   const handleLogout = () => {
     setUser(null);
-    setView('HOME');
-    resetTheme();
+    if (isAdminRoute) {
+        window.location.href = '/';
+    } else {
+        setView('HOME');
+        resetTheme();
+    }
   };
 
   const handleCategoryClick = (category: Category) => {
@@ -343,202 +368,6 @@ const App: React.FC = () => {
     setOrders(orders.map(o => o.id === orderId ? { ...o, status } : o));
   };
 
-  // --- Icon Helper for Grid ---
-  // Note: App.tsx uses lucid-react icons directly in imports for grid buttons in mobile view.
-  // The logic for getIcon is embedded or imported. Here we simplify by using a direct render in the map if needed.
-  // We keep the existing helper in App.tsx to render category icons.
-  // This helper is used in the Mobile Grid section of renderHome.
-
-  // --- Render Logic ---
-
-  const renderHome = () => (
-    <>
-      <BannerCarousel banners={banners} />
-      
-      <div className="container mx-auto px-4 mt-6">
-          <FeaturedService 
-             vendors={approvedVendors} 
-             pinnedVendorId={systemConfig.pinnedVendorId}
-             onContactClick={handleContactClick}
-             onOrderClick={handleOrderDeliveryClick} // Added this prop
-          />
-      </div>
-      
-      {/* Mobile Category Grid (Visible only on small screens) */}
-      <section className="md:hidden px-4 py-2 relative z-10">
-         <div className="bg-white rounded-xl shadow-lg p-5">
-            <h2 className="text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider text-center">Services in Dahanu</h2>
-            <div className="grid grid-cols-4 gap-4">
-                {categories.map(cat => {
-                    // Simple Icon mapping for the grid
-                    const IconComponent = (() => {
-                        // We do a simple mapping based on cat.icon string if available, or fallback
-                        // Since we can't easily dynamic import all lucide icons here without a map, 
-                        // we rely on the generic 'Category' logic or assume the user has set up the icon mapping 
-                        // in previous steps. 
-                        // For this snippet, we will just use a generic placeholder if getIcon logic isn't fully duplicated here.
-                        // However, App.tsx DOES have a getIcon helper usually.
-                        return null; 
-                    })();
-                    
-                    return (
-                        <button 
-                            key={cat.id} 
-                            onClick={() => handleCategoryClick(cat)}
-                            className="flex flex-col items-center justify-start gap-1 group"
-                        >
-                            <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm group-active:scale-95 transition">
-                                {/* We reuse the CategoryView/BottomNav icon logic if possible, or just render a placeholder. 
-                                    In the previous App.tsx, getIcon was defined. We keep it.*/}
-                                {getIcon(cat.icon, cat.themeColor || '#666')}
-                            </div>
-                            <span className="text-[10px] text-center font-bold text-gray-700 leading-tight truncate w-full">{cat.name}</span>
-                        </button>
-                    );
-                })}
-            </div>
-         </div>
-      </section>
-
-      {/* Map / Nearby Section */}
-      <section className="py-8 bg-white/50 backdrop-blur-sm mt-4 md:mt-0">
-        <div className="container mx-auto px-4">
-          <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-white/40">
-              <div className="p-4 bg-gray-50 border-b flex justify-between items-center">
-                  <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-secondary" />
-                    Complete Dahanu Map
-                  </h2>
-                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-bold">Live</span>
-              </div>
-              <div className="h-[500px] w-full relative bg-blue-50">
-                <MapVisualizer 
-                    vendors={approvedVendors} 
-                    userLocation={userLocation}
-                    aiResults={aiSearchResults}
-                />
-                {/* Decorative Map Label */}
-                <div className="absolute top-2 right-2 bg-white/80 backdrop-blur px-3 py-1 rounded text-[10px] font-bold text-gray-500 border pointer-events-none">
-                    Region: Dahanu & Surrounding
-                </div>
-              </div>
-          </div>
-        </div>
-      </section>
-
-       {/* Key Offerings Section */}
-       <section className="container mx-auto px-4 py-8">
-        <div className="bg-white/90 backdrop-blur p-8 rounded-xl shadow-sm border border-white/20">
-           <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">Why Dahanu Platform?</h2>
-           <div className="grid md:grid-cols-3 gap-6 text-center">
-              <div className="p-4 rounded hover:bg-white transition-colors">
-                 <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Star className="w-6 h-6"/>
-                 </div>
-                 <h3 className="font-bold text-gray-800 mb-2">Verified Vendors</h3>
-                 <p className="text-sm text-gray-600">Local professionals you can trust.</p>
-              </div>
-              <div className="p-4 rounded hover:bg-white transition-colors">
-                 <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Navigation className="w-6 h-6"/>
-                 </div>
-                 <h3 className="font-bold text-gray-800 mb-2">Local Map Search</h3>
-                 <p className="text-sm text-gray-600">Find services near your exact location.</p>
-              </div>
-              <div className="p-4 rounded hover:bg-white transition-colors">
-                 <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <ShoppingBag className="w-6 h-6"/>
-                 </div>
-                 <h3 className="font-bold text-gray-800 mb-2">One Stop Shop</h3>
-                 <p className="text-sm text-gray-600">From medical to events, we have it all.</p>
-              </div>
-           </div>
-        </div>
-      </section>
-    </>
-  );
-
-  const renderVendorList = () => {
-    // Robust Filtering Logic:
-    // 1. Determine the target category ID (Subcategory or Main Category)
-    const targetId = activeSubCategoryId || activeCategory?.id;
-    let filtered = approvedVendors;
-
-    if (targetId) {
-      // Find the Category object for this ID
-      const targetCat = findCategoryById(categories, targetId);
-      
-      if (targetCat) {
-        // Get ALL IDs in this branch (e.g., 'dahanu_fresh' -> ['dahanu_fresh', 'fruits', 'seasonal_fruits', ...])
-        const relevantIds = getRecursiveCategoryIds(targetCat);
-        
-        // Filter vendors who have ANY of these IDs in their categoryIds list
-        filtered = approvedVendors.filter(v => 
-          v.categoryIds.some(catId => relevantIds.includes(catId))
-        );
-      }
-    }
-
-    return (
-      <div className="container mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-140px)]">
-         
-         {/* Main List */}
-         <div className="flex-1 h-full">
-            <div className="bg-white p-4 mb-4 shadow-theme rounded-xl flex justify-between items-center sticky top-24 z-10 border-b">
-               <div className="flex items-center gap-4">
-                   <span className="font-medium text-gray-700">Showing {filtered.length} results nearby</span>
-                   <button 
-                        onClick={() => { setAuthInitialMode('VENDOR'); setAuthOpen(true); }}
-                        className="text-xs bg-secondary text-white px-3 py-1 rounded shadow hover:bg-orange-600 flex items-center gap-1"
-                   >
-                        <Plus className="w-3 h-3" /> List your Business
-                   </button>
-               </div>
-               <button onClick={handleHomeClick} className="text-sm text-primary font-bold hover:underline">Clear Filters</button>
-            </div>
-
-            <div className="space-y-4 pb-24">
-              {filtered.length === 0 ? (
-                <div className="bg-white p-12 text-center rounded-xl shadow-theme">
-                   <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4"/>
-                   <h3 className="text-lg font-bold text-gray-600">No Vendors Found</h3>
-                   <p className="text-gray-500 mb-6">Try searching for something else.</p>
-                   
-                   <button 
-                     onClick={() => { setAuthInitialMode('VENDOR'); setAuthOpen(true); }}
-                     className="bg-primary text-white px-6 py-2 rounded font-bold"
-                   >
-                     Be the first to join here!
-                   </button>
-                   <button onClick={handleHomeClick} className="block mt-4 text-primary text-sm font-bold hover:underline mx-auto">Go Home</button>
-                </div>
-              ) : (
-                filtered.map((v, index) => (
-                    <VendorCard 
-                        key={v.id}
-                        vendor={v}
-                        index={index}
-                        onContact={handleContactClick}
-                        onDirection={handleDirectionClick}
-                        onOrder={handleOrderDeliveryClick}
-                    />
-                ))
-              )}
-            </div>
-         </div>
-
-         {/* Map Side Panel */}
-         <aside className="hidden lg:block w-1/3 bg-white shadow-theme rounded-xl h-fit overflow-hidden sticky top-24 border">
-             <div className="p-3 bg-gray-50 border-b font-bold text-gray-700">Nearby Map View</div>
-             <MapVisualizer 
-                vendors={filtered} 
-                userLocation={userLocation} 
-             />
-         </aside>
-      </div>
-    );
-  };
-
   // Helper function reused from previous implementation
   const getIcon = (iconName: string | undefined, color: string) => {
     const props = { className: "w-8 h-8 mb-2", style: { color } };
@@ -557,6 +386,187 @@ const App: React.FC = () => {
     }
   };
 
+  // --- Render Functions ---
+
+  const renderHome = () => (
+    <div className="container mx-auto px-4 py-4 space-y-6 animate-fade-in pb-20">
+      <BannerCarousel banners={banners} />
+      
+      {/* Emergency Bar REMOVED */}
+
+      <div className="mt-2">
+           <FeaturedService 
+              vendors={approvedVendors} 
+              pinnedVendorId={systemConfig.pinnedVendorId}
+              onContactClick={handleContactClick}
+              onOrderClick={handleOrderDeliveryClick}
+           />
+      </div>
+
+      {/* Key Features Section */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+              { icon: ShieldCheck, title: "Verified Professionals", desc: "Background checked" },
+              { icon: Zap, title: "Fast Delivery", desc: "On-time service" },
+              { icon: Headphones, title: "24/7 Support", desc: "Always here for you" },
+              { icon: CreditCard, title: "Secure Payments", desc: "Safe transactions" }
+          ].map((feature, idx) => (
+              <div key={idx} className="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex items-center gap-3">
+                  <div className="bg-primary/10 p-2 rounded-full text-primary">
+                      <feature.icon className="w-5 h-5"/>
+                  </div>
+                  <div className="min-w-0">
+                      <h4 className="font-bold text-xs text-gray-800 truncate">{feature.title}</h4>
+                      <p className="text-[10px] text-gray-500 truncate">{feature.desc}</p>
+                  </div>
+              </div>
+          ))}
+      </div>
+
+      {userLocation && (
+           <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex justify-between items-center mb-3">
+                 <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                     <MapPin className="w-4 h-4 text-primary"/> Near You
+                 </h3>
+                 {isSearching && <span className="text-xs text-gray-500 animate-pulse">Searching...</span>}
+              </div>
+              <div className="h-48 md:h-64 rounded-lg overflow-hidden relative">
+                  <MapVisualizer 
+                      vendors={approvedVendors} 
+                      userLocation={userLocation}
+                      aiResults={aiSearchResults}
+                  />
+              </div>
+           </div>
+      )}
+
+      <div>
+          <h3 className="font-bold text-lg text-gray-800 mb-3">Explore Services</h3>
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {categories.map(cat => (
+                  <button 
+                      key={cat.id} 
+                      onClick={() => handleCategoryClick(cat)}
+                      className="flex flex-col items-center justify-center p-3 md:p-4 bg-white rounded-xl shadow-sm border border-transparent hover:border-primary/20 hover:shadow-md transition group"
+                  >
+                      <div 
+                          className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center mb-2 transition-transform group-hover:scale-110"
+                          style={{ backgroundColor: `${cat.themeColor || '#9C81A4'}15` }}
+                      >
+                          {getIcon(cat.icon, cat.themeColor || '#9C81A4')}
+                      </div>
+                      <span className="text-xs font-bold text-center text-gray-800 line-clamp-2">{cat.name}</span>
+                  </button>
+              ))}
+          </div>
+      </div>
+    </div>
+  );
+
+  const renderVendorList = () => {
+     let displayedVendors = approvedVendors;
+     
+     if (activeSubCategoryId) {
+         displayedVendors = displayedVendors.filter(v => v.categoryIds.includes(activeSubCategoryId!));
+     } else if (activeCategory) {
+         const allIds = getRecursiveCategoryIds(activeCategory);
+         displayedVendors = displayedVendors.filter(v => v.categoryIds.some(id => allIds.includes(id)));
+     }
+
+     let title = "Services";
+     if (activeSubCategoryId) {
+         const sub = findCategoryById(categories, activeSubCategoryId);
+         title = sub ? sub.name : "Service Providers";
+     } else if (activeCategory) {
+         title = activeCategory.name;
+     }
+
+     return (
+         <div className="container mx-auto px-4 py-6 min-h-screen">
+             <button onClick={handleBackClick} className="flex items-center gap-1 text-gray-600 hover:text-primary mb-4 font-medium transition">
+                 <ArrowLeft className="w-4 h-4" /> Back to Categories
+             </button>
+
+             <div className="flex justify-between items-center mb-6">
+                 <div>
+                    <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+                    <p className="text-sm text-gray-500">{displayedVendors.length} results found</p>
+                 </div>
+             </div>
+
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                 {displayedVendors.map((vendor, index) => (
+                     <VendorCard 
+                        key={vendor.id} 
+                        vendor={vendor} 
+                        index={index} 
+                        onContact={handleContactClick}
+                        onDirection={handleDirectionClick}
+                        onOrder={handleOrderDeliveryClick}
+                     />
+                 ))}
+             </div>
+             
+             {displayedVendors.length === 0 && (
+                 <div className="flex flex-col items-center justify-center py-12 text-gray-400 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                     <ShoppingBag className="w-12 h-12 mb-3 opacity-20"/>
+                     <p>No providers listed here yet.</p>
+                     <button onClick={() => { setAuthInitialMode('VENDOR'); setAuthOpen(true); }} className="mt-4 text-primary font-bold hover:underline">
+                         Register your business
+                     </button>
+                 </div>
+             )}
+         </div>
+     );
+  };
+
+  // --- Admin Page Render ---
+  if (isAdminRoute) {
+      return (
+          <div className="min-h-screen bg-gray-50 font-sans">
+              {user?.role === UserRole.ADMIN ? (
+                 <div className="container mx-auto px-4 py-6">
+                    <div className="flex justify-between items-center mb-6 bg-white p-4 rounded shadow-sm">
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-800">Admin Portal</h1>
+                            <p className="text-sm text-gray-500">System Management Console</p>
+                        </div>
+                        <button onClick={handleLogout} className="bg-red-50 text-red-600 px-4 py-2 rounded border border-red-100 font-bold hover:bg-red-100 transition">Logout</button>
+                    </div>
+                    <AdminPanel 
+                      categories={categories}
+                      vendors={vendors}
+                      banners={banners}
+                      config={systemConfig}
+                      onAddCategory={addCategory}
+                      onRemoveCategory={removeCategory}
+                      onAddSubCategory={addSubCategory}
+                      onRemoveSubCategory={removeSubCategory}
+                      onRemoveVendor={removeVendor}
+                      onAddVendor={addVendor}
+                      onApproveVendor={approveVendor}
+                      onAddBanner={addBanner}
+                      onRemoveBanner={(id) => setBanners(banners.filter(b => b.id !== id))}
+                      onSaveConfig={saveSystemConfig}
+                      onPinVendor={handlePinVendor}
+                    />
+                 </div>
+              ) : (
+                 <div className="flex items-center justify-center min-h-screen bg-[#1a1c2e]">
+                    <AuthModal 
+                        isOpen={true} 
+                        onClose={() => window.location.href = '/'} 
+                        onLoginSuccess={handleLoginSuccess}
+                        initialMode="ADMIN"
+                    />
+                 </div>
+              )}
+          </div>
+      );
+  }
+
+  // --- Public Site Render ---
   return (
     <div className="flex flex-col min-h-screen">
       {/* Side Menu */}
@@ -565,14 +575,6 @@ const App: React.FC = () => {
         onClose={() => setIsMenuOpen(false)}
         user={user}
         onLogin={() => { setAuthInitialMode('USER'); setAuthOpen(true); }}
-        onAdminPanel={() => {
-          if (user?.role === UserRole.ADMIN) {
-            setView('ADMIN');
-          } else {
-            setAuthInitialMode('ADMIN');
-            setAuthOpen(true);
-          }
-        }}
         onLogout={handleLogout}
       />
       
@@ -581,7 +583,7 @@ const App: React.FC = () => {
         onLoginClick={() => { setAuthInitialMode('USER'); setAuthOpen(true); }}
         onLogoutClick={handleLogout}
         onMenuClick={() => setIsMenuOpen(true)}
-        onAdminClick={() => setView('ADMIN')}
+        onAdminClick={() => { /* Admin link removed from public header, but just in case logic needed */ window.location.href = '/admin'; }}
         onPartnerClick={() => { setAuthInitialMode('VENDOR'); setAuthOpen(true); }}
         onVendorDashboardClick={() => setView('VENDOR_DASHBOARD')}
         locationText={locationText}
@@ -607,28 +609,6 @@ const App: React.FC = () => {
         
         {view === 'LIST' && renderVendorList()}
         
-        {view === 'ADMIN' && (
-          <div className="container mx-auto px-4 py-6">
-            <AdminPanel 
-              categories={categories}
-              vendors={vendors} // Pass ALL vendors to admin for approval
-              banners={banners}
-              config={systemConfig}
-              onAddCategory={addCategory}
-              onRemoveCategory={removeCategory}
-              onAddSubCategory={addSubCategory}
-              onRemoveSubCategory={removeSubCategory}
-              onRemoveVendor={removeVendor}
-              onAddVendor={addVendor}
-              onApproveVendor={approveVendor}
-              onAddBanner={addBanner}
-              onRemoveBanner={(id) => setBanners(banners.filter(b => b.id !== id))}
-              onSaveConfig={saveSystemConfig}
-              onPinVendor={handlePinVendor}
-            />
-          </div>
-        )}
-        
         {view === 'VENDOR_DASHBOARD' && user && (
            <VendorDashboard 
              vendor={MOCK_VENDORS[0]} // Using mock vendor data for current user
@@ -646,7 +626,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <Footer onAdminLoginClick={() => { setAuthInitialMode('ADMIN'); setAuthOpen(true); }} />
+      <Footer />
       
       <BottomNav 
         categories={categories} 

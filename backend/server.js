@@ -49,6 +49,20 @@ const initDb = async () => {
     console.log('Connected to MySQL Database.');
 
     // 3. Create Tables
+    
+    // USERS Table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id VARCHAR(50) PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(255),
+        phone VARCHAR(20),
+        role ENUM('USER', 'VENDOR', 'ADMIN') DEFAULT 'USER',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Categories
     await pool.query(`
       CREATE TABLE IF NOT EXISTS categories (
@@ -66,6 +80,7 @@ const initDb = async () => {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS vendors (
         id VARCHAR(50) PRIMARY KEY,
+        user_id VARCHAR(50),
         name VARCHAR(100) NOT NULL,
         description TEXT,
         rating DECIMAL(3,1),
@@ -77,8 +92,11 @@ const initDb = async () => {
         is_verified BOOLEAN DEFAULT FALSE,
         is_approved BOOLEAN DEFAULT FALSE,
         image_url TEXT,
+        promotional_banner_url TEXT,
+        supports_delivery BOOLEAN DEFAULT FALSE,
         price_start DECIMAL(10,2),
-        email VARCHAR(100)
+        email VARCHAR(100),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
       )
     `);
 
@@ -100,6 +118,7 @@ const initDb = async () => {
         vendor_id VARCHAR(50),
         name VARCHAR(100),
         price DECIMAL(10,2),
+        image_url TEXT,
         FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
       )
     `);
@@ -138,6 +157,16 @@ const initDb = async () => {
       console.log("Seeding Database...");
       await seedData();
     }
+    
+    // Seed Admin if not exists
+    const [adminRows] = await pool.query("SELECT * FROM users WHERE role = 'ADMIN'");
+    if (adminRows.length === 0) {
+       console.log("Creating default Admin user...");
+       await pool.query(
+         "INSERT INTO users (id, name, email, password, phone, role) VALUES (?, ?, ?, ?, ?, ?)",
+         ['u_admin', 'System Admin', 'admin@dahanu.com', 'admin123', '9876543210', 'ADMIN']
+       );
+    }
 
   } catch (err) {
     console.error("Database Initialization Error:", err);
@@ -149,6 +178,8 @@ const seedData = async () => {
   try {
     // Categories with Theme Colors
     const categories = [
+      ['dahanu_fresh', 'Dahanu Fresh', 'Apple', 'Fresh fruits, vegetables and organic produce.', '#43A047', null],
+      ['dahanu_mart', 'Dahanu Mart', 'ShoppingBasket', 'Groceries, daily essentials, and supermarket.', '#FF5722', null],
       ['events', 'Events Services', 'PartyPopper', 'Everything you need for your special occasions.', '#9C27B0', null],
       ['medical', 'Medical & Health', 'Stethoscope', 'Healthcare services, clinics, and emergency support.', '#2196F3', null],
       ['transport', 'Transport', 'Truck', 'Logistics, travel agencies, and vehicle rentals.', '#FF9800', null],
@@ -168,6 +199,9 @@ const seedData = async () => {
     
     // Sub-Categories
     const subCategories = [
+      ['fruits', 'Fresh Fruits', null, null, null, 'dahanu_fresh'],
+      ['vegetables', 'Vegetables', null, null, null, 'dahanu_fresh'],
+      ['daily_needs', 'Daily Essentials', null, null, null, 'dahanu_mart'],
       ['event_planning', 'Event Planning', null, null, null, 'events'],
       ['catering', 'Catering & Food', null, null, null, 'events'],
       ['plumber', 'Plumber', null, null, null, 'home']
@@ -179,17 +213,18 @@ const seedData = async () => {
       );
     }
 
-    // Vendors (Added is_approved)
+    // Vendors
     const vendors = [
-      ['v1', 'Elite Event Planners', 'Premier event planning', 4.8, 19.9700, 72.7300, '123 Main St, Dahanu', '+919876543210', '+91 98*** **210', true, true, 'https://picsum.photos/300/200?random=10', 5000, 'elite@events.com'],
-      ['v3', 'Quick Fix Plumbers', 'Expert plumbing', 4.2, 19.9650, 72.7250, '88 Pipe Lane, Dahanu', '+919876543212', '+91 98*** **212', true, true, 'https://picsum.photos/300/200?random=12', 150, 'fix@plumbers.com']
+      ['v1', 'Elite Event Planners', 'Premier event planning', 4.8, 19.9700, 72.7300, '123 Main St, Dahanu', '+919876543210', '+91 98*** **210', true, true, 'https://picsum.photos/300/200?random=10', null, false, 5000, 'elite@events.com'],
+      ['v3', 'Quick Fix Plumbers', 'Expert plumbing', 4.2, 19.9650, 72.7250, '88 Pipe Lane, Dahanu', '+919876543212', '+91 98*** **212', true, true, 'https://picsum.photos/300/200?random=12', null, false, 150, 'fix@plumbers.com'],
+      ['v4', 'Green Farm Fresh', 'Fresh organic vegetables', 4.9, 19.9700, 72.7300, 'Farm No 4, Bordi Road', '+919999988888', '+91 99999 88888', true, true, 'https://picsum.photos/300/200?random=13', 'https://picsum.photos/1200/300?random=88', true, 20, 'fresh@greenfarm.com']
     ];
 
     for (const v of vendors) {
       await pool.query(
         `INSERT IGNORE INTO vendors 
-        (id, name, description, rating, lat, lng, address, contact, masked_contact, is_verified, is_approved, image_url, price_start, email) 
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        (id, name, description, rating, lat, lng, address, contact, masked_contact, is_verified, is_approved, image_url, promotional_banner_url, supports_delivery, price_start, email) 
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
         v
       );
     }
@@ -197,7 +232,8 @@ const seedData = async () => {
     // Vendor Categories
     const vc = [
       ['v1', 'event_planning'],
-      ['v3', 'plumber']
+      ['v3', 'plumber'],
+      ['v4', 'dahanu_fresh']
     ];
     for (const item of vc) {
       await pool.query("INSERT IGNORE INTO vendor_categories (vendor_id, category_id) VALUES (?,?)", item);
@@ -205,12 +241,14 @@ const seedData = async () => {
 
     // Products
     const products = [
-      ['v1', 'Wedding Package', 50000],
-      ['v1', 'Birthday Basic', 15000],
-      ['v3', 'Tap Repair', 150]
+      ['v1', 'Wedding Package', 50000, null],
+      ['v1', 'Birthday Basic', 15000, null],
+      ['v3', 'Tap Repair', 150, null],
+      ['v4', 'Red Apples (1kg)', 180, 'https://picsum.photos/200?random=101'],
+      ['v4', 'Fresh Spinach', 20, 'https://picsum.photos/200?random=102']
     ];
     for (const p of products) {
-      await pool.query("INSERT INTO products (vendor_id, name, price) VALUES (?,?,?)", p);
+      await pool.query("INSERT INTO products (vendor_id, name, price, image_url) VALUES (?,?,?,?)", p);
     }
 
     // Banners
@@ -292,14 +330,23 @@ app.get('/api/vendors', async (req, res) => {
 
     // Fetch products and format data
     for (let v of vendors) {
-      const [products] = await pool.query("SELECT name, price FROM products WHERE vendor_id = ?", [v.id]);
-      v.products = products;
+      const [products] = await pool.query("SELECT name, price, image_url FROM products WHERE vendor_id = ?", [v.id]);
+      
+      // Map product image_url to image
+      v.products = products.map(p => ({
+        name: p.name,
+        price: parseFloat(p.price),
+        image: p.image_url
+      }));
+
       v.categoryIds = v.categoryIds ? v.categoryIds.split(',') : [];
       v.location = { lat: parseFloat(v.lat), lng: parseFloat(v.lng), address: v.address };
       v.maskedContact = v.masked_contact;
       v.isVerified = Boolean(v.is_verified);
       v.isApproved = Boolean(v.is_approved);
       v.imageUrl = v.image_url;
+      v.promotionalBannerUrl = v.promotional_banner_url;
+      v.supportsDelivery = Boolean(v.supports_delivery);
       v.priceStart = parseFloat(v.price_start);
       
       // Remove DB specific snake_case keys
@@ -307,6 +354,8 @@ app.get('/api/vendors', async (req, res) => {
       delete v.is_verified;
       delete v.is_approved;
       delete v.image_url;
+      delete v.promotional_banner_url;
+      delete v.supports_delivery;
       delete v.price_start;
       delete v.lat;
       delete v.lng;

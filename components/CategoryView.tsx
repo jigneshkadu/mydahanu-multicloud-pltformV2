@@ -96,10 +96,10 @@ const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectS
         {category.subCategories?.map((subCat) => (
           <div 
             key={subCat.id} 
-            className="bg-white rounded-xl p-6 border border-gray-100 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group"
+            onClick={() => onSelectSubCategory(subCat.id)}
+            className="bg-white rounded-xl p-6 border border-gray-100 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group cursor-pointer"
             style={{ boxShadow: `0 4px 6px -1px rgba(0, 0, 0, 0.05)` }}
           >
-            {/* Hover glow effect via inline style on parent didn't work easily with hover, relying on group hover for child elements */}
             <div className="flex-1">
               <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors" style={{ color: 'inherit' }}>
                 <span className="group-hover:text-[var(--primary-color)] transition-colors">{subCat.name}</span>
@@ -117,13 +117,12 @@ const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectS
                  {getVendorCount(subCat)} Vendors
                </span>
                
-               <button 
-                 onClick={() => onSelectSubCategory(subCat.id)}
-                 className="flex items-center gap-1 font-bold text-sm hover:translate-x-1 transition-transform"
+               <div 
+                 className="flex items-center gap-1 font-bold text-sm group-hover:translate-x-1 transition-transform"
                  style={{ color: themeColor }}
                >
                  View List <ArrowRight className="w-4 h-4" />
-               </button>
+               </div>
             </div>
           </div>
         ))}

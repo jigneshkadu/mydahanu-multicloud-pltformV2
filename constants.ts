@@ -349,10 +349,10 @@ export const MOCK_VENDORS: Vendor[] = [
     priceStart: 20,
     email: 'fresh@greenfarm.com',
     products: [
-      { name: 'Red Apples (1kg)', price: 180 },
-      { name: 'Fresh Spinach (Bunch)', price: 20 },
-      { name: 'Alphonso Mango (Dozen)', price: 800 },
-      { name: 'Tomatoes (1kg)', price: 40 }
+      { name: 'Red Apples (1kg)', price: 180, image: 'https://picsum.photos/200?random=101' },
+      { name: 'Fresh Spinach (Bunch)', price: 20, image: 'https://picsum.photos/200?random=102' },
+      { name: 'Alphonso Mango (Dozen)', price: 800, image: 'https://picsum.photos/200?random=103' },
+      { name: 'Tomatoes (1kg)', price: 40, image: 'https://picsum.photos/200?random=104' }
     ]
   },
   {
@@ -371,12 +371,12 @@ export const MOCK_VENDORS: Vendor[] = [
     priceStart: 10,
     email: 'sales@supermart.com',
     products: [
-      { name: 'Sunflower Oil (1L)', price: 140 },
-      { name: 'Basmati Rice (1kg)', price: 90 },
-      { name: 'Whole Wheat Atta (5kg)', price: 220 },
-      { name: 'Sugar (1kg)', price: 42 },
-      { name: 'Good Day Biscuits', price: 20 },
-      { name: 'Tata Salt (1kg)', price: 25 }
+      { name: 'Sunflower Oil (1L)', price: 140, image: 'https://picsum.photos/200?random=201' },
+      { name: 'Basmati Rice (1kg)', price: 90, image: 'https://picsum.photos/200?random=202' },
+      { name: 'Whole Wheat Atta (5kg)', price: 220, image: 'https://picsum.photos/200?random=203' },
+      { name: 'Sugar (1kg)', price: 42, image: 'https://picsum.photos/200?random=204' },
+      { name: 'Good Day Biscuits', price: 20, image: 'https://picsum.photos/200?random=205' },
+      { name: 'Tata Salt (1kg)', price: 25, image: 'https://picsum.photos/200?random=206' }
     ]
   }
 ];

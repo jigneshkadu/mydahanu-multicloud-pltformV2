@@ -36,7 +36,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({ isOpen, onClose
   };
 
   const totalAmount = calculateTotal();
-  const cartItemCount = Object.values(cart).reduce((a, b) => a + b, 0);
+  const cartItemCount = Object.values(cart).reduce((a: number, b: number) => a + b, 0);
 
   const handleSubmit = () => {
       if (totalAmount <= 0) return;
@@ -72,7 +72,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({ isOpen, onClose
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm md:p-4 animate-fade-in font-sans">
-      <div className="bg-white w-full h-full md:h-[600px] md:max-w-4xl md:rounded-xl flex flex-col md:flex-row overflow-hidden relative shadow-2xl">
+      <div className="bg-white w-full h-full md:h-[90vh] md:max-w-5xl md:rounded-xl flex flex-col md:flex-row overflow-hidden relative shadow-2xl">
         <button 
             onClick={onClose} 
             className="absolute top-4 right-4 z-50 p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition"
@@ -90,32 +90,40 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({ isOpen, onClose
                 <p className="text-sm text-gray-500">{vendor.description}</p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
-                <h3 className="font-bold text-gray-700">Available Products</h3>
-                <div className="grid grid-cols-1 gap-3">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6">
+                <h3 className="font-bold text-gray-700 mb-4">Fresh Arrivals</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                     {vendor.products?.map((product, idx) => {
                         const qty = cart[product.name] || 0;
                         return (
-                            <div key={idx} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex justify-between items-center">
-                                <div>
-                                    <h4 className="font-semibold text-gray-800">{product.name}</h4>
-                                    <p className="text-sm text-gray-500">₹{product.price}</p>
+                            <div key={idx} className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition group">
+                                <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
+                                    <img 
+                                      src={product.image || `https://picsum.photos/300/200?random=${idx + 100}`} 
+                                      alt={product.name}
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    {qty > 0 ? (
-                                        <div className="flex items-center bg-green-50 border border-green-200 rounded-lg overflow-hidden">
-                                            <button onClick={() => handleQuantityChange(product.name, -1)} className="px-3 py-1 text-green-700 hover:bg-green-100 font-bold">-</button>
-                                            <span className="px-2 font-bold text-sm min-w-[20px] text-center text-green-800">{qty}</span>
-                                            <button onClick={() => handleQuantityChange(product.name, 1)} className="px-3 py-1 text-green-700 hover:bg-green-100 font-bold">+</button>
-                                        </div>
-                                    ) : (
-                                        <button 
-                                            onClick={() => handleQuantityChange(product.name, 1)}
-                                            className="px-4 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-bold text-primary shadow-sm hover:border-primary hover:bg-primary/5 transition"
-                                        >
-                                            ADD
-                                        </button>
-                                    )}
+                                <div className="p-3 flex flex-col flex-1">
+                                    <h4 className="font-semibold text-gray-800 text-sm line-clamp-2 leading-tight mb-1" title={product.name}>{product.name}</h4>
+                                    <p className="text-lg font-bold text-gray-900 mt-auto">₹{product.price}</p>
+                                    
+                                    <div className="mt-3">
+                                        {qty > 0 ? (
+                                            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded overflow-hidden">
+                                                <button onClick={() => handleQuantityChange(product.name, -1)} className="px-3 py-1 text-green-700 hover:bg-green-100 font-bold">-</button>
+                                                <span className="font-bold text-sm text-green-800">{qty}</span>
+                                                <button onClick={() => handleQuantityChange(product.name, 1)} className="px-3 py-1 text-green-700 hover:bg-green-100 font-bold">+</button>
+                                            </div>
+                                        ) : (
+                                            <button 
+                                                onClick={() => handleQuantityChange(product.name, 1)}
+                                                className="w-full py-1.5 bg-white border border-yellow-400 rounded text-xs font-bold text-gray-700 shadow-sm hover:bg-yellow-50 transition uppercase"
+                                            >
+                                                Add
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         );
@@ -124,7 +132,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({ isOpen, onClose
             </div>
         </div>
 
-        {/* Right: Cart Summary (Mobile: Bottom Sheet style, Desktop: Sidebar) */}
+        {/* Right: Cart Summary */}
         <div className="w-full md:w-80 bg-white border-t md:border-t-0 md:border-l shadow-2xl z-20 flex flex-col">
             <div className="p-5 bg-primary/5 border-b">
                 <h3 className="font-bold text-lg flex items-center gap-2">
@@ -142,15 +150,19 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({ isOpen, onClose
                 ) : (
                     <div className="space-y-3">
                         {Object.entries(cart).map(([name, qty]) => {
+                             const quantity = qty as number;
                              const prod = vendor.products?.find(p => p.name === name);
                              if (!prod) return null;
                              return (
-                                 <div key={name} className="flex justify-between text-sm">
-                                     <div>
-                                         <span className="font-medium text-gray-800">{name}</span>
-                                         <div className="text-xs text-gray-500">{qty} x ₹{prod.price}</div>
+                                 <div key={name} className="flex gap-2 text-sm border-b pb-2">
+                                     <div className="w-12 h-12 bg-gray-100 rounded shrink-0 overflow-hidden">
+                                        <img src={prod.image || 'https://via.placeholder.com/50'} className="w-full h-full object-cover" />
                                      </div>
-                                     <div className="font-bold text-gray-700">₹{qty * prod.price}</div>
+                                     <div className="flex-1">
+                                         <span className="font-medium text-gray-800 line-clamp-1">{name}</span>
+                                         <div className="text-xs text-gray-500">{quantity} x ₹{prod.price}</div>
+                                         <div className="font-bold text-gray-700 mt-1">₹{quantity * prod.price}</div>
+                                     </div>
                                  </div>
                              );
                         })}

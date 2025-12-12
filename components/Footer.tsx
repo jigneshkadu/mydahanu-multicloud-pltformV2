@@ -2,11 +2,7 @@
 import React from 'react';
 import { Facebook, Twitter, Youtube, Instagram } from 'lucide-react';
 
-interface FooterProps {
-  onAdminLoginClick?: () => void;
-}
-
-const Footer: React.FC<FooterProps> = ({ onAdminLoginClick }) => {
+const Footer: React.FC = () => {
   return (
     <footer className="bg-gray-900 text-white text-sm mt-auto">
       <div className="container mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -49,9 +45,6 @@ const Footer: React.FC<FooterProps> = ({ onAdminLoginClick }) => {
               © 2024 Dahanu Multi-Service Platform. All rights reserved.
            </p>
         </div>
-      </div>
-      <div className="border-t border-gray-800 py-4 text-center text-xs text-gray-500">
-         <button onClick={onAdminLoginClick} className="hover:text-gray-300">Admin Login</button>
       </div>
     </footer>
   );

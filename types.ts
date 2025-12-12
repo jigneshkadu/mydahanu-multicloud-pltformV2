@@ -18,6 +18,7 @@ export interface Category {
 export interface Product {
   name: string;
   price: number;
+  image?: string; // Added image support
 }
 
 export interface Vendor {
@@ -32,6 +33,7 @@ export interface Vendor {
   isVerified: boolean;
   isApproved: boolean; // New field for approval workflow
   imageUrl: string;
+  promotionalBannerUrl?: string; // New field for vendor specific banner
   priceStart: number;
   email?: string;
   products?: Product[];
