@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { Vendor, Product } from '../types';
-import { X, Plus, Minus, ShoppingBag, Truck, CheckCircle } from 'lucide-react';
+import { X, Plus, Minus, ShoppingBag, Truck, CheckCircle, CreditCard } from 'lucide-react';
+import PaymentModal from './PaymentModal';
 
 interface DeliveryOrderModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface DeliveryOrderModalProps {
 const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({ isOpen, onClose, vendor, onPlaceOrder }) => {
   const [cart, setCart] = useState<{ [key: string]: number }>({});
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
 
   if (!isOpen) return null;
 
@@ -38,8 +40,13 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({ isOpen, onClose
   const totalAmount = calculateTotal();
   const cartItemCount = Object.values(cart).reduce((a: number, b: number) => a + b, 0);
 
-  const handleSubmit = () => {
-      if (totalAmount <= 0) return;
+  const handleProceed = () => {
+    if (totalAmount <= 0) return;
+    setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = () => {
+      setShowPayment(false);
       
       const orderItems = vendor.products
         ?.filter(p => cart[p.name])
@@ -47,7 +54,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({ isOpen, onClose
 
       setIsSuccess(true);
       
-      // Simulate API call delay
+      // Call actual order placement
       setTimeout(() => {
           onPlaceOrder(orderItems, totalAmount);
           setIsSuccess(false);
@@ -72,6 +79,17 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({ isOpen, onClose
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm md:p-4 animate-fade-in font-sans">
+      
+      {showPayment && (
+          <PaymentModal 
+             isOpen={showPayment}
+             onClose={() => setShowPayment(false)}
+             amount={totalAmount}
+             title={`Order from ${vendor.name}`}
+             onSuccess={handlePaymentSuccess}
+          />
+      )}
+
       <div className="bg-white w-full h-full md:h-[90vh] md:max-w-5xl md:rounded-xl flex flex-col md:flex-row overflow-hidden relative shadow-2xl">
         <button 
             onClick={onClose} 
@@ -185,11 +203,11 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({ isOpen, onClose
                 </div>
                 
                 <button 
-                    onClick={handleSubmit}
+                    onClick={handleProceed}
                     disabled={totalAmount === 0}
                     className="w-full bg-secondary text-white py-3 rounded-lg font-bold shadow hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition flex justify-between px-6 items-center"
                 >
-                    <span>Place Order</span>
+                    <span className="flex items-center gap-2"><CreditCard className="w-4 h-4"/> Checkout</span>
                     <span>₹{totalAmount}</span>
                 </button>
             </div>

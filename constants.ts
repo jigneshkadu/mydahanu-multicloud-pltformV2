@@ -270,121 +270,308 @@ export const APP_CATEGORIES: Category[] = [
 ];
 
 export const INITIAL_BANNERS: Banner[] = [
-  { id: '1', imageUrl: 'https://picsum.photos/1200/300?random=1', link: '#', altText: 'Big Sale on Home Services' },
-  { id: '2', imageUrl: 'https://picsum.photos/1200/300?random=2', link: '#', altText: 'Wedding Season Discounts' },
-  { id: '3', imageUrl: 'https://picsum.photos/1200/300?random=3', link: '#', altText: 'Get Fit with Local Gyms' },
+  { id: '1', imageUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80', link: '#', altText: 'Dahanu Fresh Chikoos' },
+  { id: '2', imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80', link: '#', altText: 'Best Seafood in Town' },
+  { id: '3', imageUrl: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=80', link: '#', altText: 'Emergency Medical Services' },
 ];
 
 export const MOCK_VENDORS: Vendor[] = [
+  // --- HOSPITALS & CLINICS ---
   {
-    id: 'v1',
-    name: 'Elite Event Planners',
-    categoryIds: ['event_mgmt', 'decorators'],
-    description: 'Premier event planning for weddings and corporate galas.',
-    rating: 4.8,
-    location: { lat: 40.7128, lng: -74.0060, address: '123 Main St, Downtown' },
-    contact: '+19998887777',
-    maskedContact: '+1 (555) 000-0001',
+    id: 'med_gov_1',
+    name: 'Sub District Hospital (Cottage)',
+    categoryIds: ['hospitals', 'ambulance', 'medical'],
+    description: 'Government hospital providing emergency and general healthcare services. Trauma care available.',
+    rating: 4.0,
+    location: { lat: 19.9720, lng: 72.7150, address: 'Seaface Road, Dahanu West' },
+    contact: '02528-222222',
+    maskedContact: '02528 22****',
     isVerified: true,
     isApproved: true,
-    imageUrl: 'https://picsum.photos/300/200?random=10',
-    priceStart: 500,
-    email: 'elite@events.com',
-    products: [
-      { name: 'Wedding Package', price: 50000 },
-      { name: 'Birthday Basic', price: 15000 }
-    ]
+    imageUrl: 'https://images.unsplash.com/photo-1587351021759-3e566b9af953?auto=format&fit=crop&w=300&q=80',
+    priceStart: 0,
+    supportsDelivery: false
   },
   {
-    id: 'v2',
-    name: 'City General Hospital',
-    categoryIds: ['hospitals'],
-    description: '24/7 Emergency and specialized care.',
-    rating: 4.5,
-    location: { lat: 40.7150, lng: -74.0090, address: '45 Health Ave' },
-    contact: '+19998887778',
-    maskedContact: '+1 (555) 000-0002',
-    isVerified: true,
-    isApproved: true,
-    imageUrl: 'https://picsum.photos/300/200?random=11',
-    priceStart: 100,
-    email: 'info@cityhospital.com',
-    products: [
-      { name: 'General Consultation', price: 500 },
-      { name: 'Dental Checkup', price: 800 }
-    ]
-  },
-  {
-    id: 'v3',
-    name: 'Quick Fix Plumbers',
-    categoryIds: ['plumber'],
-    description: 'Expert plumbing services within 30 mins.',
-    rating: 4.2,
-    location: { lat: 40.7100, lng: -74.0030, address: '88 Pipe Lane' },
-    contact: '+19998887779',
-    maskedContact: '+1 (555) 000-0003',
-    isVerified: true,
-    isApproved: true,
-    imageUrl: 'https://picsum.photos/300/200?random=12',
-    priceStart: 50,
-    email: 'fix@plumbers.com',
-    products: [
-      { name: 'Tap Repair', price: 150 },
-      { name: 'Pipe Fitting', price: 500 }
-    ]
-  },
-  {
-    id: 'v4',
-    name: 'Green Farm Fresh',
-    categoryIds: ['seasonal_fruits', 'daily_veggies', 'dahanu_fresh'],
-    description: 'Fresh organic vegetables from local Dahanu farms.',
-    rating: 4.9,
-    location: { lat: 19.9700, lng: 72.7300, address: 'Farm No 4, Bordi Road' },
-    contact: '+919999988888',
-    maskedContact: '+91 99999 88888',
-    isVerified: true,
-    isApproved: true,
-    supportsDelivery: true, // Supports Delivery
-    imageUrl: 'https://picsum.photos/300/200?random=13',
-    priceStart: 20,
-    email: 'fresh@greenfarm.com',
-    products: [
-      { name: 'Red Apples (1kg)', price: 180, image: 'https://picsum.photos/200?random=101' },
-      { name: 'Fresh Spinach (Bunch)', price: 20, image: 'https://picsum.photos/200?random=102' },
-      { name: 'Alphonso Mango (Dozen)', price: 800, image: 'https://picsum.photos/200?random=103' },
-      { name: 'Tomatoes (1kg)', price: 40, image: 'https://picsum.photos/200?random=104' }
-    ]
-  },
-  {
-    id: 'v5',
-    name: 'Dahanu Super Mart',
-    categoryIds: ['daily_needs', 'snacks', 'dahanu_mart'],
-    description: 'Your daily supermarket at your doorstep. Best prices guaranteed.',
+    id: 'med_pvt_1',
+    name: 'Ashirwad Nursing Home',
+    categoryIds: ['hospitals', 'medical', 'nursing'],
+    description: 'Multispeciality hospital with Maternity and Surgical care.',
     rating: 4.6,
+    location: { lat: 19.9735, lng: 72.7320, address: 'Irani Road, Dahanu East' },
+    contact: '+919922001122',
+    maskedContact: '+91 99220 *****',
+    isVerified: true,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=300&q=80',
+    priceStart: 500,
+    supportsDelivery: false
+  },
+  {
+    id: 'med_eye_1',
+    name: 'Dahanu Eye Hospital',
+    categoryIds: ['hospitals', 'clinic', 'medical'],
+    description: 'Specialized eye care centre, cataract surgeries.',
+    rating: 4.8,
+    location: { lat: 19.9750, lng: 72.7300, address: 'Masoli, Dahanu' },
+    contact: '+919822334455',
+    maskedContact: '+91 98223 *****',
+    isVerified: true,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=300&q=80',
+    priceStart: 300,
+    supportsDelivery: false
+  },
+  {
+    id: 'med_dent_1',
+    name: 'Dr. Shah Dental Care',
+    categoryIds: ['dentist', 'clinic', 'medical'],
+    description: 'Advanced dental treatments, root canals, and implants.',
+    rating: 4.9,
+    location: { lat: 19.9765, lng: 72.7290, address: 'Station Road, Dahanu East' },
+    contact: '+919000000002',
+    maskedContact: '+91 90000 *****',
+    isVerified: true,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f72?auto=format&fit=crop&w=300&q=80',
+    priceStart: 200,
+    supportsDelivery: false
+  },
+  {
+    id: 'med_diag_1',
+    name: 'Care Diagnostic Centre',
+    categoryIds: ['diagnostics', 'medical'],
+    description: 'Pathology, X-Ray, Sonography and ECG.',
+    rating: 4.3,
+    location: { lat: 19.9740, lng: 72.7310, address: 'Near Railway Station, Dahanu' },
+    contact: '+919890000003',
+    maskedContact: '+91 98900 *****',
+    isVerified: true,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=300&q=80',
+    priceStart: 150,
+    supportsDelivery: false
+  },
+  {
+    id: 'med_phar_1',
+    name: 'Sanjeevani Medical Store',
+    categoryIds: ['pharmacy', 'medical'],
+    description: '24/7 Chemist and druggist. Free home delivery nearby.',
+    rating: 4.5,
+    location: { lat: 19.9710, lng: 72.7180, address: 'Main Market, Dahanu West' },
+    contact: '+919890000004',
+    maskedContact: '+91 98900 *****',
+    isVerified: true,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?auto=format&fit=crop&w=300&q=80',
+    priceStart: 10,
+    supportsDelivery: true,
+    products: [
+        { name: 'Paracetamol Strip', price: 20 },
+        { name: 'Cough Syrup', price: 85 },
+        { name: 'First Aid Kit', price: 250 },
+        { name: 'Thermometer', price: 150 }
+    ]
+  },
+
+  // --- FOOD & RESTAURANTS ---
+  {
+    id: 'fd_1',
+    name: 'Crazy Crab Restaurant',
+    categoryIds: ['restaurant', 'beverage', 'food'],
+    description: 'Famous for seafood and seaside dining experience. Must try: Crab Masala.',
+    rating: 4.7,
+    location: { lat: 19.9680, lng: 72.7100, address: 'Dahanu Beach' },
+    contact: '02528-223344',
+    maskedContact: '02528 22****',
+    isVerified: true,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=300&q=80',
+    priceStart: 300,
+    supportsDelivery: true,
+    products: [
+        { name: 'Crab Masala', price: 450, image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=200&q=80' },
+        { name: 'Pomfret Fry', price: 350, image: 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?auto=format&fit=crop&w=200&q=80' },
+        { name: 'Veg Thali', price: 150 }
+    ]
+  },
+  {
+    id: 'fd_2',
+    name: 'Hotel Shetkar',
+    categoryIds: ['restaurant', 'food'],
+    description: 'Authentic Maharashtrian Thali and non-veg delicacies.',
+    rating: 4.2,
+    location: { lat: 19.9760, lng: 72.7330, address: 'Near Flyover, Dahanu East' },
+    contact: '+919988776655',
+    maskedContact: '+91 99887 *****',
+    isVerified: false,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80',
+    priceStart: 120,
+    supportsDelivery: true,
+    products: [
+        { name: 'Chicken Thali', price: 200 },
+        { name: 'Mutton Bhakri', price: 250 },
+        { name: 'Pithla Bhakri', price: 120 }
+    ]
+  },
+  {
+    id: 'fd_3',
+    name: 'Beach Classic Restaurant',
+    categoryIds: ['restaurant', 'beverage', 'food'],
+    description: 'Garden restaurant with sea view. Chinese and Indian cuisine.',
+    rating: 4.4,
+    location: { lat: 19.9690, lng: 72.7110, address: 'Seaface, Dahanu' },
+    contact: '02528-224455',
+    maskedContact: '02528 22****',
+    isVerified: true,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=300&q=80',
+    priceStart: 180,
+    supportsDelivery: true
+  },
+
+  // --- ACCOMMODATION ---
+  {
+    id: 'ht_1',
+    name: 'Pearline Beach Resort',
+    categoryIds: ['hotel', 'agro', 'accom'],
+    description: 'Luxury stay near the beach with swimming pool and AC rooms.',
+    rating: 4.5,
+    location: { lat: 19.9650, lng: 72.7120, address: 'Agar, Dahanu' },
+    contact: '+919922334455',
+    maskedContact: '+91 99223 *****',
+    isVerified: true,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=300&q=80',
+    priceStart: 2500,
+    supportsDelivery: false
+  },
+  {
+    id: 'ht_2',
+    name: 'Save Farm',
+    categoryIds: ['agro', 'accom', 'dahanu_fresh'],
+    description: 'Authentic agro-tourism experience. Stay in nature, organic food.',
+    rating: 4.8,
+    location: { lat: 20.0100, lng: 72.7600, address: 'Gholvad, Dahanu' },
+    contact: '02528-241130',
+    maskedContact: '02528 24****',
+    isVerified: true,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=300&q=80',
+    priceStart: 1500,
+    supportsDelivery: false
+  },
+
+  // --- FRESH & MART ---
+  {
+    id: 'fr_1',
+    name: 'Dahanu Organic Farms',
+    categoryIds: ['dahanu_fresh', 'fruits', 'organic'],
+    description: 'Famous Gholvad Chikoos, Mangoes and Neera.',
+    rating: 4.9,
+    location: { lat: 20.0050, lng: 72.7550, address: 'Bordi Road' },
+    contact: '+919800099999',
+    maskedContact: '+91 98000 *****',
+    isVerified: true,
+    isApproved: true,
+    supportsDelivery: true,
+    imageUrl: 'https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=300&q=80',
+    priceStart: 60,
+    products: [
+        { name: 'Dahanu Chikoo (1kg)', price: 60, image: 'https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=200&q=80' },
+        { name: 'Kesar Mango (1 Dozen)', price: 800 },
+        { name: 'Fresh Neera (1L)', price: 100 }
+    ]
+  },
+  {
+    id: 'mt_1',
+    name: 'Dahanu Super Mart',
+    categoryIds: ['dahanu_mart', 'daily_needs', 'snacks'],
+    description: 'One stop shop for all grocery needs.',
+    rating: 4.3,
     location: { lat: 19.9750, lng: 72.7350, address: 'Main Market, Dahanu East' },
     contact: '+919888877777',
-    maskedContact: '+91 98888 77777',
+    maskedContact: '+91 98888 *****',
     isVerified: true,
     isApproved: true,
-    supportsDelivery: true, // Supports Delivery
-    imageUrl: 'https://picsum.photos/300/200?random=14',
-    priceStart: 10,
-    email: 'sales@supermart.com',
+    supportsDelivery: true,
+    imageUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=300&q=80',
+    priceStart: 20,
     products: [
-      { name: 'Sunflower Oil (1L)', price: 140, image: 'https://picsum.photos/200?random=201' },
-      { name: 'Basmati Rice (1kg)', price: 90, image: 'https://picsum.photos/200?random=202' },
-      { name: 'Whole Wheat Atta (5kg)', price: 220, image: 'https://picsum.photos/200?random=203' },
-      { name: 'Sugar (1kg)', price: 42, image: 'https://picsum.photos/200?random=204' },
-      { name: 'Good Day Biscuits', price: 20, image: 'https://picsum.photos/200?random=205' },
-      { name: 'Tata Salt (1kg)', price: 25, image: 'https://picsum.photos/200?random=206' }
+      { name: 'Sunflower Oil (1L)', price: 140 },
+      { name: 'Basmati Rice (1kg)', price: 90 },
+      { name: 'Sugar (1kg)', price: 42 }
     ]
+  },
+
+  // --- SERVICES (Events, Transport, Home) ---
+  {
+    id: 'ev_1',
+    name: 'Royal Celebrations Hall',
+    categoryIds: ['events', 'event_planning', 'decorators'],
+    description: 'Spacious AC hall for weddings, birthdays and corporate events.',
+    rating: 4.4,
+    location: { lat: 19.9800, lng: 72.7400, address: 'Kosbad Road' },
+    contact: '+919000000001',
+    maskedContact: '+91 90000 *****',
+    isVerified: true,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=300&q=80',
+    priceStart: 15000,
+    supportsDelivery: false
+  },
+  {
+    id: 'tr_1',
+    name: 'Om Sai Travels',
+    categoryIds: ['transport', 'private_car', 'bus'],
+    description: 'Car rentals, Bus booking for Mumbai/Gujarat.',
+    rating: 4.2,
+    location: { lat: 19.9745, lng: 72.7315, address: 'Near Bus Stand, Dahanu' },
+    contact: '+919998887776',
+    maskedContact: '+91 99988 *****',
+    isVerified: true,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=300&q=80',
+    priceStart: 1500,
+    supportsDelivery: false
+  },
+  {
+    id: 'rep_1',
+    name: 'Dahanu Auto Garage',
+    categoryIds: ['transport', 'auto_service', 'puncture'],
+    description: 'Two wheeler and four wheeler repair, puncture and washing.',
+    rating: 4.1,
+    location: { lat: 19.9730, lng: 72.7250, address: 'Parnaka, Dahanu' },
+    contact: '+917777777777',
+    maskedContact: '+91 77777 *****',
+    isVerified: false,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1597500746977-2c974c0b4629?auto=format&fit=crop&w=300&q=80',
+    priceStart: 50,
+    supportsDelivery: false
+  },
+  {
+    id: 'edu_1',
+    name: 'St. Mary\'s High School',
+    categoryIds: ['home'], // Using 'home' as a fallback since education isn't a primary cat
+    description: 'Reputed educational institution in Dahanu.',
+    rating: 4.8,
+    location: { lat: 19.9725, lng: 72.7200, address: 'Dahanu Road' },
+    contact: '02528-222100',
+    maskedContact: '02528 22****',
+    isVerified: true,
+    isApproved: true,
+    imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=300&q=80',
+    priceStart: 0,
+    supportsDelivery: false
   }
 ];
 
 export const MOCK_ORDERS: Order[] = [
   {
     id: 'o1',
-    vendorId: 'v1',
+    vendorId: 'ev_1',
     customerName: 'Rahul Sharma',
     customerPhone: '9876543210',
     serviceRequested: 'Wedding Decoration',
@@ -395,13 +582,13 @@ export const MOCK_ORDERS: Order[] = [
   },
   {
     id: 'o2',
-    vendorId: 'v1',
+    vendorId: 'fd_1',
     customerName: 'Priya Patel',
     customerPhone: '9876543211',
-    serviceRequested: 'Birthday Party Mgmt',
+    serviceRequested: 'Seafood Platter',
     date: '2024-05-18',
     status: 'ACCEPTED',
     address: '101, Ocean View Apts, Dahanu',
-    amount: 5000
+    amount: 1200
   }
 ];

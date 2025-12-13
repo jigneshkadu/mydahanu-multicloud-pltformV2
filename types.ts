@@ -13,6 +13,7 @@ export interface Category {
   icon?: string; // name of the Lucide icon
   description?: string;
   themeColor?: string; // New property for dynamic theming
+  registrationFee?: number; // Fee in INR
 }
 
 export interface Product {

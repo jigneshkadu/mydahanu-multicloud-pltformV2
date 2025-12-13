@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { X, UserCircle, HelpCircle, Gift, Rocket, Briefcase, ShoppingBag, Plane, Tag, LogOut, LogIn } from 'lucide-react';
-import { User } from '../types';
+import { X, UserCircle, HelpCircle, Gift, Rocket, Briefcase, ShoppingBag, Plane, Tag, LogOut, LogIn, ShieldCheck, LayoutDashboard } from 'lucide-react';
+import { User, UserRole } from '../types';
 
 interface SideMenuProps {
   isOpen: boolean;
@@ -9,9 +9,10 @@ interface SideMenuProps {
   user: User | null;
   onLogin: () => void;
   onLogout: () => void;
+  onAdminClick: () => void; // New Prop
 }
 
-const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, user, onLogin, onLogout }) => {
+const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, user, onLogin, onLogout, onAdminClick }) => {
   return (
     <>
       {/* Backdrop */}
@@ -21,10 +22,10 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, user, onLogin, onL
       />
       
       {/* Drawer */}
-      <div className={`fixed top-0 left-0 bottom-0 w-80 bg-white shadow-2xl z-[101] transform transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed top-0 left-0 bottom-0 w-80 bg-white shadow-2xl z-[101] transform transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
         
         {/* Header */}
-        <div className="bg-[#1a1c2e] text-white p-5 flex items-center justify-between">
+        <div className="bg-[#1a1c2e] text-white p-5 flex items-center justify-between shrink-0">
            <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
                  <UserCircle className="w-6 h-6" />
@@ -43,8 +44,8 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, user, onLogin, onL
            <button onClick={onClose} className="p-1 hover:bg-white/10 rounded"><X className="w-6 h-6 text-gray-300" /></button>
         </div>
 
-        {/* Menu Items */}
-        <div className="overflow-y-auto h-[calc(100%-80px)] p-4 space-y-6">
+        {/* Menu Items - Scrollable Area */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
             
             {/* Programs & Features */}
             <div className="border-b border-gray-100 pb-4">
@@ -66,7 +67,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, user, onLogin, onL
             </div>
 
             {/* Help & Settings */}
-            <div>
+            <div className="border-b border-gray-100 pb-4">
                 <h3 className="font-bold text-gray-900 mb-3 px-2 text-sm uppercase tracking-wider">Help & Settings</h3>
                 <div className="space-y-1">
                     <button className="w-full text-left px-3 py-2.5 hover:bg-gray-50 rounded-lg flex items-center gap-3 text-sm text-gray-600 transition-colors">
@@ -86,7 +87,29 @@ const SideMenu: React.FC<SideMenuProps> = ({ isOpen, onClose, user, onLogin, onL
                     )}
                 </div>
             </div>
+            
+            {/* Partner Zone (Bottom Section) */}
+            <div>
+                 <h3 className="font-bold text-gray-900 mb-3 px-2 text-sm uppercase tracking-wider">Partner Zone</h3>
+                 <div className="space-y-1">
+                     <button 
+                        onClick={() => { onAdminClick(); onClose(); }} 
+                        className="w-full text-left px-3 py-2.5 hover:bg-purple-50 rounded-lg flex items-center gap-3 text-sm text-gray-700 transition-colors font-medium"
+                     >
+                        <ShieldCheck className="w-4 h-4 text-purple-600" /> Admin Portal
+                     </button>
+                     {user?.role === UserRole.VENDOR && (
+                         <button className="w-full text-left px-3 py-2.5 hover:bg-orange-50 rounded-lg flex items-center gap-3 text-sm text-gray-700 transition-colors font-medium">
+                            <LayoutDashboard className="w-4 h-4 text-orange-600" /> Vendor Dashboard
+                         </button>
+                     )}
+                 </div>
+            </div>
 
+        </div>
+        
+        <div className="p-4 bg-gray-50 text-[10px] text-gray-400 text-center border-t border-gray-100">
+            v1.0.2 • Dahanu Multi-Service
         </div>
       </div>
     </>

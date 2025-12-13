@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Trash2, Plus, Bell, Settings, ChevronDown, ChevronRight, Mail, Server, Shield, Save, Minus, Upload, CheckCircle, XCircle, AlertCircle, FileText, Pin, PinOff } from 'lucide-react';
+import { Trash2, Plus, Bell, Settings, ChevronDown, ChevronRight, Mail, Server, Shield, Save, Minus, Upload, CheckCircle, XCircle, AlertCircle, FileText, Pin, PinOff, IndianRupee, Pencil, Check, X } from 'lucide-react';
 import { Category, Vendor, Banner, Product, SystemConfig } from '../types';
 
 interface AdminPanelProps {
@@ -8,30 +8,42 @@ interface AdminPanelProps {
   vendors: Vendor[];
   banners: Banner[];
   config: SystemConfig;
-  onAddCategory: (name: string) => void;
+  onAddCategory: (name: string, fee: number) => void;
   onRemoveCategory: (id: string) => void;
-  onAddSubCategory: (parentId: string, name: string) => void;
+  onUpdateCategoryFee: (id: string, fee: number) => void;
+  onAddSubCategory: (parentId: string, name: string, fee: number) => void;
   onRemoveSubCategory: (parentId: string, subId: string) => void;
+  onUpdateSubCategoryFee: (parentId: string, subId: string, fee: number) => void;
   onRemoveVendor: (id: string) => void;
   onAddVendor: (vendor: Vendor) => void;
   onApproveVendor: (id: string) => void;
   onAddBanner: (imageUrl: string, link: string, altText: string) => void;
   onRemoveBanner: (id: string) => void;
   onSaveConfig: (config: SystemConfig) => void;
-  onPinVendor: (id: string | undefined) => void; // New Prop
+  onPinVendor: (id: string | undefined) => void;
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({
   categories, vendors, banners, config,
-  onAddCategory, onRemoveCategory, onAddSubCategory, onRemoveSubCategory,
+  onAddCategory, onRemoveCategory, onUpdateCategoryFee,
+  onAddSubCategory, onRemoveSubCategory, onUpdateSubCategoryFee,
   onRemoveVendor, onAddVendor, onApproveVendor,
   onAddBanner, onRemoveBanner,
   onSaveConfig, onPinVendor
 }) => {
   const [activeTab, setActiveTab] = useState<'CATS' | 'APPROVALS' | 'VENDORS' | 'BANNERS' | 'CONFIG'>('CATS');
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
+  
+  // Category State
   const [newCatName, setNewCatName] = useState('');
+  const [newCatFee, setNewCatFee] = useState<string>('999');
+  
+  // Sub Category State
   const [newSubCatName, setNewSubCatName] = useState<{[key:string]: string}>({});
+  const [newSubCatFee, setNewSubCatFee] = useState<{[key:string]: string}>({});
+
+  // Editing State
+  const [editingItem, setEditingItem] = useState<{id: string, parentId?: string, value: string} | null>(null);
 
   // Banner State
   const [showAddBanner, setShowAddBanner] = useState(false);
@@ -70,17 +82,38 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const handleAddCategory = () => {
     if (newCatName.trim()) {
-      onAddCategory(newCatName);
+      const fee = parseFloat(newCatFee) || 999;
+      onAddCategory(newCatName, fee);
       setNewCatName('');
+      setNewCatFee('999');
     }
   };
 
   const handleAddSubCategory = (parentId: string) => {
     const name = newSubCatName[parentId];
+    const fee = parseFloat(newSubCatFee[parentId]) || 999;
+    
     if (name?.trim()) {
-      onAddSubCategory(parentId, name);
+      onAddSubCategory(parentId, name, fee);
       setNewSubCatName({...newSubCatName, [parentId]: ''});
+      setNewSubCatFee({...newSubCatFee, [parentId]: '999'});
     }
+  };
+
+  const startEditing = (id: string, currentFee: number, parentId?: string) => {
+      setEditingItem({ id, parentId, value: String(currentFee || 999) });
+  };
+
+  const saveEditing = () => {
+      if (!editingItem) return;
+      const fee = parseFloat(editingItem.value) || 0;
+      
+      if (editingItem.parentId) {
+          onUpdateSubCategoryFee(editingItem.parentId, editingItem.id, fee);
+      } else {
+          onUpdateCategoryFee(editingItem.id, fee);
+      }
+      setEditingItem(null);
   };
 
   const handleAddProduct = () => {
@@ -97,6 +130,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       const updated = [...(newVendor.products || [])];
       updated.splice(idx, 1);
       setNewVendor({ ...newVendor, products: updated });
+  };
+
+  const handleProductImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setNewProduct({...newProduct, image: reader.result as string});
+        };
+        reader.readAsDataURL(file);
+      }
   };
 
   const handleSubmitVendor = () => {
@@ -119,7 +163,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           location: newVendor.location || { lat: 0, lng: 0, address: '' },
           imageUrl: 'https://picsum.photos/300/200',
           priceStart: newVendor.products && newVendor.products.length > 0 ? Math.min(...newVendor.products.map(p => p.price)) : 0,
-          products: newVendor.products
+          products: newVendor.products,
+          supportsDelivery: newVendor.category.includes('fresh') || newVendor.category.includes('mart')
       };
 
       onAddVendor(finalVendor);
@@ -190,16 +235,32 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       <div className="p-6">
         {activeTab === 'CATS' && (
           <div>
-            <div className="flex justify-between mb-6 bg-gray-50 p-4 rounded">
-              <h2 className="text-xl font-bold flex items-center">Manage Categories</h2>
-              <div className="flex gap-2">
-                <input 
-                   className="border rounded px-2 py-1 text-sm"
-                   placeholder="New Category Name"
-                   value={newCatName}
-                   onChange={e => setNewCatName(e.target.value)}
-                />
-                <button onClick={handleAddCategory} className="flex items-center gap-2 bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 text-sm">
+            <div className="flex justify-between mb-6 bg-gray-50 p-4 rounded items-end">
+              <div>
+                  <h2 className="text-xl font-bold flex items-center mb-2">Manage Categories</h2>
+                  <p className="text-xs text-gray-500">Add main categories and set registration fees</p>
+              </div>
+              <div className="flex gap-2 items-end">
+                <div className="flex flex-col gap-1">
+                    <label className="text-[10px] uppercase font-bold text-gray-500">Name</label>
+                    <input 
+                       className="border rounded px-2 py-1 text-sm h-9"
+                       placeholder="Category Name"
+                       value={newCatName}
+                       onChange={e => setNewCatName(e.target.value)}
+                    />
+                </div>
+                <div className="flex flex-col gap-1 w-24">
+                    <label className="text-[10px] uppercase font-bold text-gray-500">Reg Fee (₹)</label>
+                    <input 
+                       type="number"
+                       className="border rounded px-2 py-1 text-sm h-9"
+                       placeholder="999"
+                       value={newCatFee}
+                       onChange={e => setNewCatFee(e.target.value)}
+                    />
+                </div>
+                <button onClick={handleAddCategory} className="flex items-center gap-2 bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 text-sm h-9 font-bold">
                     <Plus className="w-4 h-4" /> Add
                 </button>
               </div>
@@ -207,13 +268,43 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             
             <ul className="space-y-3">
               {categories.map(c => (
-                <li key={c.id} className="border rounded bg-white overflow-hidden">
-                   <div className="flex justify-between items-center p-3 bg-gray-50 hover:bg-gray-100 cursor-pointer" onClick={() => toggleExpand(c.id)}>
-                       <div className="flex items-center gap-2 font-semibold">
+                <li key={c.id} className="border rounded bg-white overflow-hidden shadow-sm">
+                   <div className="flex justify-between items-center p-3 bg-gray-50 hover:bg-gray-100 transition">
+                       <div className="flex items-center gap-2 font-semibold cursor-pointer select-none" onClick={() => toggleExpand(c.id)}>
                            {expandedCats.has(c.id) ? <ChevronDown className="w-4 h-4"/> : <ChevronRight className="w-4 h-4"/>}
                            {c.name}
                        </div>
-                       <button onClick={(e) => { e.stopPropagation(); onRemoveCategory(c.id); }} className="text-red-500 hover:bg-red-100 p-1.5 rounded"><Trash2 className="w-4 h-4" /></button>
+                       <div className="flex items-center gap-3">
+                           {editingItem?.id === c.id && !editingItem.parentId ? (
+                               <div className="flex items-center gap-1 bg-white border border-blue-300 rounded p-0.5">
+                                   <span className="text-xs text-gray-400 pl-1">₹</span>
+                                   <input 
+                                       type="number" 
+                                       className="w-16 text-xs outline-none" 
+                                       value={editingItem.value}
+                                       onChange={e => setEditingItem({...editingItem, value: e.target.value})}
+                                       autoFocus
+                                   />
+                                   <button onClick={saveEditing} className="text-green-600 hover:bg-green-50 p-1 rounded"><Check className="w-3 h-3"/></button>
+                                   <button onClick={() => setEditingItem(null)} className="text-red-500 hover:bg-red-50 p-1 rounded"><X className="w-3 h-3"/></button>
+                               </div>
+                           ) : (
+                               <div className="flex items-center gap-1 group">
+                                   <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold border border-green-200">
+                                       Fee: ₹{c.registrationFee || 999}
+                                   </span>
+                                   <button 
+                                      onClick={() => startEditing(c.id, c.registrationFee || 999)} 
+                                      className="text-gray-400 hover:text-blue-500 hover:bg-blue-50 p-1 rounded transition opacity-0 group-hover:opacity-100"
+                                      title="Edit Fee"
+                                   >
+                                      <Pencil className="w-3 h-3" />
+                                   </button>
+                               </div>
+                           )}
+                           
+                           <button onClick={(e) => { e.stopPropagation(); onRemoveCategory(c.id); }} className="text-red-500 hover:bg-red-100 p-1.5 rounded ml-2"><Trash2 className="w-4 h-4" /></button>
+                       </div>
                    </div>
                    
                    {/* Subcategories */}
@@ -222,21 +313,62 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">Sub-Categories</h4>
                         <ul className="space-y-2 mb-4">
                           {c.subCategories?.map(sub => (
-                            <li key={sub.id} className="flex justify-between items-center text-sm p-2 hover:bg-gray-50 rounded">
+                            <li key={sub.id} className="flex justify-between items-center text-sm p-2 hover:bg-gray-50 rounded border border-transparent hover:border-gray-200">
                                <span>{sub.name}</span>
-                               <button onClick={() => onRemoveSubCategory(c.id, sub.id)} className="text-red-400 hover:text-red-600"><Trash2 className="w-3 h-3" /></button>
+                               <div className="flex items-center gap-3">
+                                   {editingItem?.id === sub.id && editingItem.parentId === c.id ? (
+                                        <div className="flex items-center gap-1 bg-white border border-blue-300 rounded p-0.5">
+                                            <span className="text-xs text-gray-400 pl-1">₹</span>
+                                            <input 
+                                                type="number" 
+                                                className="w-16 text-xs outline-none" 
+                                                value={editingItem.value}
+                                                onChange={e => setEditingItem({...editingItem, value: e.target.value})}
+                                                autoFocus
+                                            />
+                                            <button onClick={saveEditing} className="text-green-600 hover:bg-green-50 p-1 rounded"><Check className="w-3 h-3"/></button>
+                                            <button onClick={() => setEditingItem(null)} className="text-red-500 hover:bg-red-50 p-1 rounded"><X className="w-3 h-3"/></button>
+                                        </div>
+                                   ) : (
+                                        <div className="flex items-center gap-1 group">
+                                            <span className="text-[10px] text-gray-500 font-mono bg-gray-100 px-1 rounded">
+                                                Fee: ₹{sub.registrationFee || (c.registrationFee || 999)}
+                                            </span>
+                                            <button 
+                                                onClick={() => startEditing(sub.id, sub.registrationFee || (c.registrationFee || 999), c.id)}
+                                                className="text-gray-400 hover:text-blue-500 hover:bg-blue-50 p-1 rounded transition opacity-0 group-hover:opacity-100"
+                                                title="Edit Sub-Category Fee"
+                                            >
+                                                <Pencil className="w-3 h-3"/>
+                                            </button>
+                                        </div>
+                                   )}
+                                   <button onClick={() => onRemoveSubCategory(c.id, sub.id)} className="text-red-400 hover:text-red-600 ml-2"><Trash2 className="w-3 h-3" /></button>
+                               </div>
                             </li>
                           ))}
                           {(!c.subCategories || c.subCategories.length === 0) && <li className="text-sm text-gray-400 italic">No subcategories</li>}
                         </ul>
-                        <div className="flex gap-2">
+                        
+                        <div className="flex gap-2 items-center bg-gray-50 p-2 rounded border border-dashed">
+                            <span className="text-xs font-bold text-gray-400">Add Sub:</span>
                             <input 
-                                className="border rounded px-2 py-1 text-xs w-full"
-                                placeholder="Add sub-category..."
+                                className="border rounded px-2 py-1 text-xs flex-1"
+                                placeholder="Name"
                                 value={newSubCatName[c.id] || ''}
                                 onChange={e => setNewSubCatName({...newSubCatName, [c.id]: e.target.value})}
                             />
-                            <button onClick={() => handleAddSubCategory(c.id)} className="bg-[#9C81A4]/10 text-[#7E6885] px-3 py-1 rounded text-xs font-bold hover:bg-[#9C81A4]/20">Add</button>
+                            <div className="relative w-24">
+                                <span className="absolute left-2 top-1.5 text-xs text-gray-400">₹</span>
+                                <input 
+                                    type="number"
+                                    className="border rounded pl-5 pr-2 py-1 text-xs w-full"
+                                    placeholder={String(c.registrationFee || 999)}
+                                    value={newSubCatFee[c.id] || ''}
+                                    onChange={e => setNewSubCatFee({...newSubCatFee, [c.id]: e.target.value})}
+                                />
+                            </div>
+                            <button onClick={() => handleAddSubCategory(c.id)} className="bg-[#9C81A4] text-white px-3 py-1 rounded text-xs font-bold hover:bg-[#7E6885]">Add</button>
                         </div>
                      </div>
                    )}
@@ -291,6 +423,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
              </div>
         )}
 
+        {/* ... (Existing Vendors Tab Content - No Changes needed) ... */}
         {activeTab === 'VENDORS' && (
           <div>
             <div className="flex justify-between items-center mb-4">
@@ -379,16 +512,34 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
                              <div className="bg-white p-3 rounded border">
                                  <label className="block text-sm font-bold text-gray-700 mb-2">Product Price List</label>
-                                 <div className="flex gap-2 mb-2">
-                                     <input placeholder="Product Name" className="flex-1 border p-1 rounded text-sm" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} />
-                                     <input placeholder="Price" type="number" className="w-20 border p-1 rounded text-sm" value={newProduct.price || ''} onChange={e => setNewProduct({...newProduct, price: parseFloat(e.target.value)})} />
-                                     <input placeholder="Img URL" className="w-24 border p-1 rounded text-sm" value={newProduct.image || ''} onChange={e => setNewProduct({...newProduct, image: e.target.value})} />
-                                     <button onClick={handleAddProduct} className="bg-green-500 text-white px-3 rounded text-sm font-bold">+</button>
+                                 <div className="flex gap-2 mb-2 items-center">
+                                     <input placeholder="Product Name" className="flex-1 border p-1 rounded text-sm h-[30px]" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} />
+                                     <input placeholder="Price" type="number" className="w-16 border p-1 rounded text-sm h-[30px]" value={newProduct.price || ''} onChange={e => setNewProduct({...newProduct, price: parseFloat(e.target.value)})} />
+                                     
+                                     {/* Admin Product Image Upload */}
+                                     <div className="w-20 relative h-[30px]">
+                                         <input 
+                                            type="file" 
+                                            id="admin-prod-img" 
+                                            className="hidden" 
+                                            accept="image/*"
+                                            onChange={handleProductImageUpload}
+                                         />
+                                         <label htmlFor="admin-prod-img" className={`w-full h-full border rounded text-[10px] flex items-center justify-center cursor-pointer hover:bg-gray-100 ${newProduct.image ? 'bg-green-50 border-green-300 text-green-700' : 'bg-gray-50 text-gray-600'}`}>
+                                             {newProduct.image ? "Change" : "Browse"}
+                                         </label>
+                                     </div>
+                                     {newProduct.image && <img src={newProduct.image} className="w-[30px] h-[30px] rounded border object-cover bg-gray-100" />}
+
+                                     <button onClick={handleAddProduct} className="bg-green-500 text-white px-3 rounded text-sm font-bold h-[30px] flex items-center hover:bg-green-600">+</button>
                                  </div>
                                  <ul className="max-h-24 overflow-y-auto space-y-1">
                                      {newVendor.products?.map((p, i) => (
-                                         <li key={i} className="flex justify-between text-sm bg-gray-50 p-1 rounded">
-                                             <span>{p.name}</span>
+                                         <li key={i} className="flex justify-between text-sm bg-gray-50 p-1 rounded items-center">
+                                             <div className="flex items-center gap-2">
+                                                 {p.image && <img src={p.image} className="w-6 h-6 rounded object-cover" />}
+                                                 <span>{p.name}</span>
+                                             </div>
                                              <div className="flex items-center gap-2">
                                                 <span className="font-mono">₹{p.price}</span>
                                                 <button onClick={() => handleRemoveProduct(i)} className="text-red-500 hover:text-red-700"><Trash2 className="w-3 h-3"/></button>
@@ -452,6 +603,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         )}
 
+        {/* ... (Banners and Config Tabs - No Changes needed) ... */}
         {activeTab === 'BANNERS' && (
           <div>
             <div className="flex justify-between mb-4">

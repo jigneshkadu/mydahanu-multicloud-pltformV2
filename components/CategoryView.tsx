@@ -76,8 +76,8 @@ const CategoryView: React.FC<CategoryViewProps> = ({ category, onBack, onSelectS
             {getIcon(category.icon, "w-10 h-10", { color: themeColor })}
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{category.name}</h1>
-            <p className="text-gray-500 text-sm mt-1">{category.description}</p>
+            <h1 className="text-3xl font-bold text-white">{category.name}</h1>
+            <p className="text-gray-300 text-sm mt-1">{category.description}</p>
           </div>
         </div>
         

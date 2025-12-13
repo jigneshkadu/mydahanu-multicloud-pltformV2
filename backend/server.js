@@ -270,6 +270,165 @@ initDb();
 
 // --- API ROUTES ---
 
+// ========================
+// AUTHENTICATION & OTP
+// ========================
+
+// In-memory OTP Store (NOTE: Use Redis or DB in production)
+const otpStore = new Map();
+
+// Request OTP
+app.post('/api/auth/otp/request', (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ error: "Phone number required" });
+  
+  // Generate 4 digit OTP (Mocked)
+  const otp = Math.floor(1000 + Math.random() * 9000).toString(); 
+  
+  console.log(`[AUTH] OTP generated for ${phone}: ${otp}`);
+  otpStore.set(phone, { otp, expires: Date.now() + 300000 }); // 5 mins expiration
+
+  // TODO: Integrate SMS Gateway here (e.g. Twilio, Msg91)
+  res.json({ success: true, message: 'OTP sent successfully' });
+});
+
+// Verify OTP
+app.post('/api/auth/otp/verify', async (req, res) => {
+  const { phone, otp } = req.body;
+  
+  // Backdoor for demo/admin testing
+  if (phone === '9876543210' && otp === '1234') {
+     // Proceed to check user
+  } else {
+      const record = otpStore.get(phone);
+      if (!record) return res.status(400).json({ error: "OTP not requested or expired" });
+      if (record.otp !== otp) return res.status(400).json({ error: "Invalid OTP" });
+      if (Date.now() > record.expires) {
+          otpStore.delete(phone);
+          return res.status(400).json({ error: "OTP Expired" });
+      }
+      otpStore.delete(phone); // Burn OTP after use
+  }
+
+  try {
+    // Check if user exists
+    const [users] = await pool.query('SELECT * FROM users WHERE phone = ?', [phone]);
+    
+    if (users.length > 0) {
+       const user = users[0];
+       delete user.password;
+       res.json({ success: true, isNewUser: false, user });
+    } else {
+       res.json({ success: true, isNewUser: true });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Register User (Complete profile after OTP or direct)
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { id, name, email, phone, role, password } = req.body;
+    
+    if (!id || !name || !email || !phone) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Check duplicates
+    const [existing] = await pool.query('SELECT id FROM users WHERE email = ? OR phone = ?', [email, phone]);
+    if (existing.length > 0) return res.status(409).json({ error: "User already exists with this email or phone" });
+
+    // Insert
+    await pool.query(
+        'INSERT INTO users (id, name, email, phone, role, password) VALUES (?, ?, ?, ?, ?, ?)',
+        [id, name, email, phone, role || 'USER', password || null]
+    );
+
+    // Fetch created user
+    const [users] = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
+    const user = users[0];
+    delete user.password;
+
+    res.json({ success: true, user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Login (Password based - e.g. for Admin or specific users)
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    
+    if (users.length === 0) return res.status(401).json({ error: "Invalid credentials" });
+    
+    const user = users[0];
+    // NOTE: In production, compare hashed password (e.g., bcrypt.compare)
+    if (user.password !== password) return res.status(401).json({ error: "Invalid credentials" }); 
+    
+    delete user.password;
+    res.json({ success: true, user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========================
+// USER MANAGEMENT
+// ========================
+
+// Get All Users (Admin)
+app.get('/api/users', async (req, res) => {
+    try {
+        const [users] = await pool.query('SELECT id, name, email, phone, role, created_at FROM users ORDER BY created_at DESC');
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Get Single User
+app.get('/api/users/:id', async (req, res) => {
+    try {
+        const [users] = await pool.query('SELECT id, name, email, phone, role, created_at FROM users WHERE id = ?', [req.params.id]);
+        if (users.length === 0) return res.status(404).json({ error: "User not found" });
+        res.json(users[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Update User
+app.put('/api/users/:id', async (req, res) => {
+    try {
+        const { name, email, phone } = req.body;
+        // Basic validation
+        if (!name && !email && !phone) return res.status(400).json({error: "Nothing to update"});
+
+        // Construct dynamic query
+        let fields = [];
+        let params = [];
+        if (name) { fields.push('name = ?'); params.push(name); }
+        if (email) { fields.push('email = ?'); params.push(email); }
+        if (phone) { fields.push('phone = ?'); params.push(phone); }
+        
+        params.push(req.params.id);
+
+        await pool.query(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, params);
+        res.json({ success: true, message: "User updated successfully" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ========================
+// EXISTING APP ROUTES
+// ========================
+
 // 1. Get Categories
 app.get('/api/categories', async (req, res) => {
   try {
